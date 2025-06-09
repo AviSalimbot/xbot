@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Twitter Analytics Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Twitter Analytics Dashboard</h1>
+    <div class="button-container">
+      <button id="relevantBtn" class="action-btn">🔍 Relevant Tweets</button>
+      <button id="topBtn" class="action-btn">⭐ My Top Tweets</button>
+      <button id="engagersBtn" class="action-btn">👥 My Latest Engagers</button>
+      <button id="followAccountsBtn" class="action-btn">➕ Follow Accounts</button>
+    </div>
+    <div id="status" class="status-message" style="display:none"></div>
+    <div id="loading" class="loading">🔄 Loading...</div>
+    <div id="tweet-container"></div>
+  </div>
+
+  <script>
+   
+    const statusDiv = document.getElementById('status');
+    const loadingDiv = document.getElementById('loading');
+    const container = document.getElementById('tweet-container');
+
+    document.getElementById('relevantBtn').addEventListener('click', () => loadTweets('/search'));
+    document.getElementById('topBtn').addEventListener('click', () => loadTweets('/my-top'));
+    document.getElementById('engagersBtn').addEventListener('click', () => loadEngagers());
+    document.getElementById('followAccountsBtn').addEventListener('click', followAccounts);
+
+
+    async function loadTweets(endpoint) {
+      container.innerHTML = '';
+      statusDiv.style.display = ''; statusDiv.textContent = 'Loading...';
+      loadingDiv.style.display = 'block';
+
+      try {
+        const r = await fetch(endpoint);
+        const { success, message, tweets } = await r.json();
+        statusDiv.textContent = message;
+        statusDiv.className = 'status-message ' + (success ? 'status-success' : 'status-error');
+
+        if (tweets.length === 0) {
+          container.innerHTML = '<div class="no-tweets">No tweets found.</div>';
+        } else {
+          container.innerHTML = tweets.map(t => `
+            <a href="${t.url}" target="_blank" class="tweet-url">
+              <div class="tweet">
+                <p class="tweet-text">${t.text}</p>
+                <p class="engagements">💬 ${t.replies} 🔁 ${t.reposts} ❤️ ${t.likes}</p>
+              </div>
+            </a>
+          `).join('');
+        }
+      } catch (e) {
+        statusDiv.textContent = 'Error fetching tweets.';
+        statusDiv.className = 'status-message status-error';
+      } finally {
+        loadingDiv.style.display = 'none';
+      }
+    }
+
+    async function loadEngagers() {
+        container.innerHTML = '';
+        statusDiv.style.display = ''; statusDiv.textContent = 'Loading...';
+        loadingDiv.style.display = 'block';
+
+        try {
+            const r = await fetch('/my-engagers');
+            const { success, message, engagers } = await r.json();
+            statusDiv.textContent = message;
+            statusDiv.className = 'status-message ' + (success ? 'status-success' : 'status-error');
+
+            if (!engagers.length) {
+            container.innerHTML = '<div class="no-tweets">No engagers found.</div>';
+            } else {
+            container.innerHTML = engagers.map(e => `
+            <a href="https://x.com/${e.handle}" target="_blank" class="tweet-url">
+                <div class="tweet">
+                <p class="tweet-text">@${e.handle}</p>
+                <p class="engagements">👥 Followers: ${e.followers}</p>
+                </div>
+              </a>
+            `).join('');
+            }
+        } catch (e) {
+            statusDiv.textContent = 'Error fetching engagers.';
+            statusDiv.className = 'status-message status-error';
+        } finally {
+            loadingDiv.style.display = 'none';
+        }
+    }
+
+    async function followAccounts() {
+      container.innerHTML = '';
+      statusDiv.style.display = '';
+      statusDiv.textContent = 'Following Ethereum accounts, please wait...';
+      statusDiv.className = 'status-message';
+      loadingDiv.style.display = 'block';
+
+      try {
+        const response = await fetch('/follow');
+        const data = await response.json();
+
+        loadingDiv.style.display = 'none';
+
+        if (data.success) {
+          if (data.followed.length > 0) {
+            statusDiv.textContent = `Followed ${data.followed.length} accounts! Spreadsheet created and shown below.`;
+            statusDiv.className = 'status-message status-success';
+
+            // Display the accounts visually
+            container.innerHTML = data.followed.map(acc => `
+              <a href="${acc.profileUrl}" target="_blank" class="tweet-url">
+                <div class="tweet">
+                  <p class="tweet-text">@${acc.handle}</p>
+                  <p class="engagements">👥 Followers: ${acc.followers.toLocaleString()}</p>
+                </div>
+              </a>
+            `).join('');
+
+            // Optionally add download link if backend returns file URL
+            if (data.fileUrl) {
+              const downloadLink = document.createElement('a');
+              downloadLink.href = data.fileUrl;
+              downloadLink.textContent = '📥 Download Spreadsheet';
+              downloadLink.className = 'download-link';
+              downloadLink.target = '_blank';
+              container.appendChild(downloadLink);
+            }
+          } else {
+            statusDiv.textContent = 'No accounts were followed.';
+            statusDiv.className = 'status-message status-error';
+            container.innerHTML = '<div class="no-tweets">No accounts followed.</div>';
+          }
+        } else {
+          statusDiv.textContent = 'Failed: ' + data.message;
+          statusDiv.className = 'status-message status-error';
+          container.innerHTML = '<div class="no-tweets">Could not follow accounts.</div>';
+        }
+      } catch (err) {
+        loadingDiv.style.display = 'none';
+        statusDiv.textContent = 'Error: ' + err.message;
+        statusDiv.className = 'status-message status-error';
+        container.innerHTML = '<div class="no-tweets">Something went wrong.</div>';
+      }
+    }
+
+  </script>
+</body>
+</html>
