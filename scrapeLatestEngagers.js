@@ -23,9 +23,12 @@ async function scrapeLatestEngagers() {
           .filter(article => {
             const text = article.innerText.toLowerCase();
             return text.includes('liked your post')
-              || text.includes('replied to your tweet')
-              || text.includes('reposted your tweet')
-              || text.includes('retweeted');
+            || text.includes('replied to your post')
+            || text.includes('reposted your post')
+            || text.includes('liked your reply')
+            || text.includes('retweeted')
+            || /reposted \d+ of your posts/.test(text)
+            || /liked \d+ of your posts/.test(text)
           })
           .map(article => {
             const link = article.querySelector('a[role="link"][href^="/"]');
