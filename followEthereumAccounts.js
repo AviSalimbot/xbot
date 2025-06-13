@@ -36,7 +36,7 @@ async function followEthereumAccounts() {
     const followedAccounts = [];
 
     for (const relativeUrl of accounts) {
-      if (followedAccounts.length >= 5) break; // Limit to 5 follows
+      if (followedAccounts.length >= 1) break; // Limit to 5 follows
 
       try {
         const profilePage = await browser.newPage();
