@@ -27,6 +27,7 @@ async function scrapeLatestEngagers() {
             || text.includes('reposted your post')
             || text.includes('liked your reply')
             || text.includes('retweeted')
+            || text.includes('Replying to')
             || /reposted \d+ of your posts/.test(text)
             || /liked \d+ of your posts/.test(text)
           })
@@ -38,8 +39,6 @@ async function scrapeLatestEngagers() {
           .filter(Boolean);
       }
     );
-
-    console.log('✅ Inside Handles...');
 
     const uniqueHandles = [...new Set(handles)].slice(0, 10);
 
@@ -64,6 +63,14 @@ async function scrapeLatestEngagers() {
         console.error(`Failed @${handle}: ${e.message}`);
       }
     }
+
+    // 🔥 Sort engagers by follower count (highest to lowest)
+    results.sort((a, b) => b.followers - a.followers);
+
+    console.log('✅ Engagers sorted by follower count:');
+    results.forEach((engager, index) => {
+      console.log(`${index + 1}. @${engager.handle} - ${engager.followers.toLocaleString()} followers`);
+    });
 
     await page.close(); // Close main page tab only
     // Do NOT close the browser itself
