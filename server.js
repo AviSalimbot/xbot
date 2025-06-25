@@ -8,6 +8,7 @@ const searchRoute = require('./routes/search');
 const myTopRoute = require('./routes/myTop');
 const engagersRoute = require('./routes/engagers');
 const followRouter = require('./routes/follow');
+const monitorRouter = require('./routes/monitor');
 
 const app = express();
 
@@ -31,10 +32,11 @@ app.use('/search', searchRoute);
 app.use('/my-top', myTopRoute);
 app.use('/my-engagers', engagersRoute);
 app.use('/follow', followRouter);
-
+app.use('/monitor', monitorRouter);
 
 // Server start
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`📊 Google Sheets Monitor available at http://localhost:${PORT}/monitor`);
 });
