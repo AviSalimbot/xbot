@@ -56,7 +56,7 @@ async function analyzeTweet(tweetText) {
       claude.kill();
       console.log('Tweet analysis result: FAIL (Analysis timeout)');
       resolve('FAIL');
-    }, 60000);
+    }, 180000); // Increased timeout to 180 seconds
   });
 }
 
