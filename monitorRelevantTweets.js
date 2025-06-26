@@ -135,6 +135,16 @@ async function processNewRows() {
   
   const spreadsheetId = latestFile.id;
   
+  // Reset .last_row.txt if a new sheet is detected, and create/update .last_sheet_id.txt
+  const LAST_SHEET_ID_FILE = '.last_sheet_id.txt';
+  let lastSheetId = '';
+  if (fs.existsSync(LAST_SHEET_ID_FILE)) {
+    lastSheetId = fs.readFileSync(LAST_SHEET_ID_FILE, 'utf8');
+  }
+  if (spreadsheetId !== lastSheetId) {
+    fs.writeFileSync(LAST_ROW_FILE, '0');
+    fs.writeFileSync(LAST_SHEET_ID_FILE, spreadsheetId);
+  }
   
   const latestSheet = await getLatestEthereumTweetsSheet(sheets, spreadsheetId);
   if (!latestSheet) {
@@ -148,9 +158,9 @@ async function processNewRows() {
     range: `${latestSheet}!A:D`
   });
   const rows = res.data.values || [];
-  if (rows.length <= 1) return; // Only header
+  if (rows.length === 0) return; // No data
 
-  let lastProcessedRow = 1; // 1 = header row, so start with row 2
+  let lastProcessedRow = 0;
   if (fs.existsSync(LAST_ROW_FILE)) {
     lastProcessedRow = parseInt(fs.readFileSync(LAST_ROW_FILE, 'utf8'), 10);
   }
@@ -195,8 +205,8 @@ async function processNewRows() {
     await new Promise(r => setTimeout(r, 2000)); // Avoid rate limits
   }
 
-    // Update last processed row to avoid duplicate processing
-    fs.writeFileSync(LAST_ROW_FILE, rows.length.toString());
+  // Update last processed row to avoid duplicate processing
+  fs.writeFileSync(LAST_ROW_FILE, rows.length.toString());
   } catch (error) {
     console.error('Error processing rows:', error);
   } finally {
@@ -234,9 +244,9 @@ if (require.main === module) {
 
   // Run immediately when script is executed directly
   processNewRows();
-  // Then run every 2 minutes
-  cron.schedule('*/2 * * * *', processNewRows);
-  console.log('Monitoring started. Running every 2 minutes...');
+  // Then run every 5 minutes
+  cron.schedule('*/5 * * * *', processNewRows);
+  console.log('Monitoring started. Running every 5 minutes...');
 }
 
 module.exports = { processNewRows, getMonitoringStatus };
