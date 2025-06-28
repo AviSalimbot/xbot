@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { processNewRows, getMonitoringStatus } = require('../monitorRelevantTweets');
+const { processNewRows } = require('../monitorRelevantTweets');
+const { startMonitoring, stopMonitoring, getMonitoringStatus, getMonitoringStatusSync } = require('../monitorManager');
 const { google } = require('googleapis');
 const cron = require('node-cron');
 
-let isMonitoring = false;
+let isWebMonitoring = false;
 let cronJob = null;
 
 // Get relevant tweets from the target spreadsheet
@@ -69,47 +70,31 @@ router.get('/', async (req, res) => {
 // Start monitoring
 router.post('/start', async (req, res) => {
     try {
-        const standaloneMonitoring = getMonitoringStatus();
-        
-        if (isMonitoring) {
-            return res.json({ 
-                success: false, 
-                message: 'Web interface monitoring is already running' 
-            });
-        }
+        const standaloneMonitoring = getMonitoringStatusSync();
         
         if (standaloneMonitoring) {
             return res.json({ 
                 success: false, 
-                message: 'Monitoring is already active via standalone script. Stop the script first or use "Process Now" for manual processing.' 
+                message: 'Monitoring is already running. Stop it first before starting again.' 
             });
         }
 
-        console.log('🚀 Starting monitoring from web interface...');
+        console.log('🚀 Starting monitoring with sleep prevention...');
         
-        // Start the cron job to run every 2 minutes
-        cronJob = cron.schedule('*/2 * * * *', async () => {
-            try {
-                console.log('🔄 Running scheduled tweet processing...');
-                await processNewRows();
-            } catch (error) {
-                console.error('❌ Error in scheduled processing:', error);
-            }
-        }, {
-            scheduled: false // Don't start immediately
-        });
+        // Use the new monitoring manager to start with caffeinate
+        const result = await startMonitoring();
         
-        cronJob.start();
-        isMonitoring = true;
-        
-        // Run initial processing
-        console.log('🔄 Running initial tweet processing...');
-        await processNewRows();
-        
-        res.json({ 
-            success: true, 
-            message: 'Relevant tweets monitoring started successfully. Processing every 2 minutes.' 
-        });
+        if (result.success) {
+            res.json({ 
+                success: true, 
+                message: 'Monitoring started successfully with sleep prevention. Running every 5 minutes.' 
+            });
+        } else {
+            res.json({ 
+                success: false, 
+                message: result.message || 'Failed to start monitoring' 
+            });
+        }
         
     } catch (error) {
         console.error('❌ Error starting monitoring:', error);
@@ -123,27 +108,31 @@ router.post('/start', async (req, res) => {
 // Stop monitoring
 router.post('/stop', async (req, res) => {
     try {
-        if (!isMonitoring) {
+        const standaloneMonitoring = getMonitoringStatusSync();
+        
+        if (!standaloneMonitoring) {
             return res.json({ 
                 success: false, 
                 message: 'Monitoring is not running' 
             });
         }
 
-        console.log('🛑 Stopping monitoring from web interface...');
+        console.log('🛑 Stopping monitoring...');
         
-        if (cronJob) {
-            cronJob.stop();
-            cronJob.destroy();
-            cronJob = null;
+        // Use the new monitoring manager to stop
+        const result = await stopMonitoring();
+        
+        if (result.success) {
+            res.json({ 
+                success: true, 
+                message: 'Monitoring stopped successfully' 
+            });
+        } else {
+            res.json({ 
+                success: false, 
+                message: result.message || 'Failed to stop monitoring' 
+            });
         }
-        
-        isMonitoring = false;
-        
-        res.json({ 
-            success: true, 
-            message: 'Relevant tweets monitoring stopped successfully' 
-        });
         
     } catch (error) {
         console.error('❌ Error stopping monitoring:', error);
@@ -155,28 +144,22 @@ router.post('/stop', async (req, res) => {
 });
 
 // Get monitoring status
-router.get('/status', (req, res) => {
-    // Check both web interface monitoring and standalone monitoring
-    const webMonitoring = isMonitoring;
-    const standaloneMonitoring = getMonitoringStatus();
-    const anyMonitoring = webMonitoring || standaloneMonitoring;
-    
-    let message;
-    if (standaloneMonitoring) {
-        message = 'Monitoring is active (standalone script)';
-    } else if (webMonitoring) {
-        message = 'Monitoring is active (web interface)';
-    } else {
-        message = 'Monitoring is not running';
+router.get('/status', async (req, res) => {
+    try {
+        const statusResult = await getMonitoringStatus();
+        
+        res.json({
+            success: true,
+            isMonitoring: statusResult.isMonitoring,
+            message: statusResult.message
+        });
+    } catch (error) {
+        res.json({
+            success: true,
+            isMonitoring: false,
+            message: 'Monitoring is not running'
+        });
     }
-    
-    res.json({
-        success: true,
-        isMonitoring: anyMonitoring,
-        webMonitoring: webMonitoring,
-        standaloneMonitoring: standaloneMonitoring,
-        message: message
-    });
 });
 
 // Manual trigger to process new rows

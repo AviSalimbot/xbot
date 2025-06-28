@@ -7,6 +7,7 @@ const fs = require('fs');
 const LAST_ROW_FILE = '.last_row.txt';
 const LOCK_FILE = '.monitor.lock';
 let isProcessing = false;
+let cronTask = null;
 
 const SHEET_NAME_PREFIX = 'Ethereum Tweets';
 const RELEVANT_SHEET = 'Sheet1';
@@ -58,10 +59,10 @@ function toUTC8(dateStr) {
     let [date, time] = dateStr.split(' at ');
     // Ensure there is a space before AM/PM
     time = time.replace(/(\d{1,2}:\d{2})\s?(AM|PM)/i, '$1 $2');
-    // Parse as UTC
-    d = new Date(`${date} ${time} UTC`);
+    // Parse as local time (not UTC)
+    d = new Date(`${date} ${time}`);
   } else {
-    d = new Date(dateStr + ' UTC');
+    d = new Date(dateStr);
   }
   if (isNaN(d.getTime())) {
     d = new Date(Date.parse(dateStr));
@@ -69,16 +70,22 @@ function toUTC8(dateStr) {
   if (isNaN(d.getTime())) {
     return 'Invalid Date';
   }
-  // Add 8 hours in milliseconds
-  d = new Date(d.getTime() + 8 * 60 * 60 * 1000);
-  // Format back
-  const options = { month: 'long', day: 'numeric', year: 'numeric' };
-  const datePart = d.toLocaleDateString('en-US', options);
-  let hour = d.getUTCHours();
-  const min = d.getUTCMinutes().toString().padStart(2, '0');
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  hour = hour % 12 || 12;
-  return `${datePart} at ${hour}:${min}${ampm}`;
+  
+  // Convert to UTC+8 by adding 8 hours to the local time
+  const utc8Time = new Date(d.getTime() + (8 * 60 * 60 * 1000));
+  
+  // Format as UTC+8
+  const options = { 
+    month: 'long', 
+    day: 'numeric', 
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Manila' // UTC+8 timezone
+  };
+  
+  return utc8Time.toLocaleString('en-US', options);
 }
 
 async function getFollowerCount(handle) {
@@ -90,10 +97,10 @@ async function getFollowerCount(handle) {
   try {
     await page.goto(`https://x.com/${handle.replace(/^@/, '')}`, { waitUntil: 'networkidle2', timeout: 60000 });
     // Wait for the followers element
-    await page.waitForSelector('a[href$="/verified_followers"] span > span', { timeout: 15000 });
+    await page.waitForSelector('a[href*="verified_followers"] span > span', { timeout: 15000 });
 
     const followersText = await page.$eval(
-      'a[href$="/verified_followers"] span > span',
+      'a[href*="verified_followers"] span > span',
       el => el.textContent.trim()
     );
 
@@ -177,17 +184,25 @@ async function processNewRows() {
   // Only process each new row once per run
   for (let i = lastProcessedRow; i < rows.length; i++) {
     const [createdAt, handle, tweetText, tweetLink] = rows[i];
-    if (processedSet.has(tweetLink)) continue;
+    if (processedSet.has(tweetLink)) {
+      // Update last processed row even for duplicates
+      fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
+      continue;
+    }
 
     const followerCount = await getFollowerCount(handle);
-    if (followerCount <= 1000) {
+    if (followerCount <= 2000) {
       console.log(`Tweet ${i + 1} FAIL (Follower count too low)`);
+      // Update last processed row after processing (fail)
+      fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
       continue;
     }
 
     const result = await analyzeTweet(tweetText);
     if (result !== 'PASS') {
       console.log(`Tweet ${i + 1} FAIL`);
+      // Update last processed row after processing (fail)
+      fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
       continue;
     }
 
@@ -202,11 +217,12 @@ async function processNewRows() {
     });
     console.log(`Tweet ${i + 1} PASS`);
     console.log(`✅ Added relevant tweet: ${tweetLink}`);
+    
+    // Update last processed row after processing (pass)
+    fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
+    
     await new Promise(r => setTimeout(r, 2000)); // Avoid rate limits
   }
-
-  // Update last processed row to avoid duplicate processing
-  fs.writeFileSync(LAST_ROW_FILE, rows.length.toString());
   } catch (error) {
     console.error('Error processing rows:', error);
   } finally {
@@ -229,12 +245,34 @@ function getMonitoringStatus() {
   }
 }
 
+function stopMonitoring() {
+  if (!fs.existsSync(LOCK_FILE)) {
+    return { success: false, message: 'Monitoring is not currently running' };
+  }
+  
+  try {
+    const pid = parseInt(fs.readFileSync(LOCK_FILE, 'utf8'), 10);
+    // Send SIGTERM to gracefully stop the process
+    process.kill(pid, 'SIGTERM');
+    return { success: true, message: 'Monitoring stopped successfully' };
+  } catch (e) {
+    // Process not running, remove stale lock file
+    if (fs.existsSync(LOCK_FILE)) fs.unlinkSync(LOCK_FILE);
+    return { success: false, message: 'Monitoring process was not running' };
+  }
+}
+
 if (require.main === module) {
   // Create lock file to indicate monitoring is active
   fs.writeFileSync(LOCK_FILE, process.pid.toString());
 
   // Remove lock file on exit
   const cleanup = () => {
+    console.log('Cleaning up and stopping monitoring...');
+    if (cronTask) {
+      cronTask.stop();
+      cronTask = null;
+    }
     if (fs.existsSync(LOCK_FILE)) fs.unlinkSync(LOCK_FILE);
     process.exit();
   };
@@ -245,9 +283,9 @@ if (require.main === module) {
   // Run immediately when script is executed directly
   processNewRows();
   // Then run every 5 minutes
-  cron.schedule('*/5 * * * *', processNewRows);
+  cronTask = cron.schedule('*/5 * * * *', processNewRows);
   console.log('Monitoring started. Running every 5 minutes...');
 }
 
-module.exports = { processNewRows, getMonitoringStatus };
+module.exports = { processNewRows, getMonitoringStatus, stopMonitoring };
 
