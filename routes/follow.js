@@ -1,10 +1,10 @@
 const express = require('express');
-const followEthereumAccounts = require('../followEthereumAccounts');
+const followAccounts = require('../followAccounts');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-      const followedAccounts = await followEthereumAccounts();
+      const followedAccounts = await followAccounts();
   
       const successMessage = followedAccounts.length > 0
         ? `Followed ${followedAccounts.length} accounts! Spreadsheet created.`

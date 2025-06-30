@@ -308,7 +308,7 @@
 		async function followAccounts() {
 			container.innerHTML = '';
 			statusDiv.style.display = '';
-			statusDiv.textContent = 'Following Ethereum accounts, please wait...';
+			statusDiv.textContent = 'Following accounts, please wait...';
 			statusDiv.className = 'status-message';
 
 			try {
@@ -317,7 +317,7 @@
 
 				if (data.success) {
 					if (data.followed.length > 0) {
-						statusDiv.textContent = `Followed ${data.followed.length} accounts! Spreadsheet created and shown below.`;
+						statusDiv.textContent = `Followed ${data.followed.length} accounts! Row added to spreadsheet.`;
 						statusDiv.className = 'status-message status-success';
 
 						// Display the accounts visually
@@ -392,8 +392,8 @@
 						<div class="monitor-info">
 							<h4>What this does:</h4>
 							<ul>
-								<li>📊 Monitors latest 'Ethereum Tweets' spreadsheet for new rows</li>
-								<li>👥 Checks follower count (must be >2000)</li>
+								<li>📊 Monitors latest tweets spreadsheet for new rows</li>
+								<li>👥 Checks follower count (must be >1000)</li>
 								<li>🤖 Analyzes tweet content using AI (filters spam, bots, financial advice, etc.)</li>
 								<li>✅ Adds relevant tweets to target spreadsheet</li>
 								<li>⏰ Runs automatically every 5 minutes</li>
