@@ -45,3 +45,24 @@ project-root/
 4. Open a new tab for http://localhost:3000/
 5. Click any button
 
+
+
+
+ENGAGEMENT SUGGESTIONS
+1. Obtain trending tweets (IFTTT - X to Gsheets)
+2. Obtain trending ethereum tweets (IFTTT - X to Gsheets)
+3. Fetch trending tweets and trending ethereum tweets (XBOT)
+4. Let AI draw connection between trending tweet and trendng ethereum tweet (XBOT)
+5. Let AI generate a comment/reply (XBOT)
+6. Display comment suggestions (Dashboard)
+
+Trending Tweet  |   Ethereum Tweet   | Comment Suggestion
+
+Questions: 
+1. Given trending tweet is looped with ethereum tweets, should I:
+    a. stop when a cnnection is established.
+    b. continue until n connections and choose the best.
+
+
+1. SCALABILITY
+2. ASSOCIATION

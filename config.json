@@ -1,0 +1,47 @@
+{
+  "ethereum": {
+    "name": "Ethereum",
+    "searchQuery": "ethereum -scam -giveaway -airdrop -bot -pump -dump",
+    "userSearchQuery": "ethereum",
+    "sheetPrefix": "Ethereum Tweets",
+    "followersThreshold": 2000,
+    "followAccountsThreshold": 5000,
+    "statusMessages": {
+      "following": "Following Ethereum accounts, please wait...",
+      "monitoring": "📊 Monitors latest 'Ethereum Tweets' spreadsheet for new rows"
+    },
+    "followSheet": "Ethereum Follow Report",
+    "targetSheet": "Relevant Tweets",
+    "folder": "1zZAuLBh8YECQFX_7YRbFO7tGJCnrTe-K"
+  },
+  "basketball": {
+    "name": "Basketball",
+    "searchQuery": "basketball -scam -giveaway -bot",
+    "userSearchQuery": "basketball",
+    "sheetPrefix": "Basketball Tweets",
+    "followersThreshold": 1000,
+    "followAccountsThreshold": 3000,
+    "statusMessages": {
+      "following": "Following Basketball accounts, please wait...",
+      "monitoring": "📊 Monitors latest 'Basketball Tweets' spreadsheet for new rows"
+    },
+    "followSheet": "Basketball Follow Report",
+    "targetSheet": "Relevant Tweets",
+    "folder": "Basketball Google Drive Folder ID"
+  },
+  "crypto": {
+    "name": "Crypto",
+    "searchQuery": "crypto -scam -giveaway -airdrop -bot -pump -dump",
+    "userSearchQuery": "crypto",
+    "sheetPrefix": "Crypto Tweets",
+    "followersThreshold": 1500,
+    "followAccountsThreshold": 4000,
+    "statusMessages": {
+      "following": "Following Crypto accounts, please wait...",
+      "monitoring": "📊 Monitors latest 'Crypto Tweets' spreadsheet for new rows"
+    },
+    "followSheet": "Crypto Follow Report",
+    "targetSheet": "Relevant Tweets",
+    "folder": "Crypto Google Drive Folder ID"
+  }
+} 

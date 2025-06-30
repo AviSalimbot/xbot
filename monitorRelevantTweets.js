@@ -4,13 +4,26 @@ const puppeteer = require('puppeteer');
 const { analyzeTweet } = require('./twitterScrape');
 const cron = require('node-cron');
 const fs = require('fs');
+const path = require('path');
 const LAST_ROW_FILE = '.last_row.txt';
 const LOCK_FILE = '.monitor.lock';
 let isProcessing = false;
 let cronTask = null;
 
-const SHEET_NAME_PREFIX = 'Ethereum Tweets';
 const RELEVANT_SHEET = 'Sheet1';
+
+// Load configuration based on environment
+function getConfig() {
+  const configPath = path.join(__dirname, 'config.json');
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  
+  const environment = process.env.TOPIC || 'ethereum';
+  if (!config[environment]) {
+    throw new Error(`Configuration for topic '${environment}' not found in config.json`);
+  }
+  
+  return config[environment];
+}
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection:', reason);
@@ -28,8 +41,8 @@ async function getAuth() {
   return auth.getClient();
 }
 
-
-async function getLatestEthereumTweetsSpreadsheet(auth) {
+async function getLatestTweetsSpreadsheet(auth) {
+  const config = getConfig();
   const drive = google.drive({ version: 'v3', auth });
   // List all spreadsheets accessible to the service account
   const res = await drive.files.list({
@@ -40,13 +53,25 @@ async function getLatestEthereumTweetsSpreadsheet(auth) {
   });
   const files = res.data.files || [];
   // Find the most recent file whose name matches the prefix
-  const candidates = files.filter(f => f.name.startsWith(SHEET_NAME_PREFIX));
+  const candidates = files.filter(f => f.name.startsWith(config.sheetPrefix));
   if (candidates.length === 0) return null;
   // Return the most recently modified
   return candidates[0];
 }
 
-async function getLatestEthereumTweetsSheet(sheets, spreadsheetId) {
+async function findTargetSpreadsheet(auth, config) {
+  const drive = google.drive({ version: 'v3', auth });
+  // Search for the target sheet by name in the specified folder
+  const res = await drive.files.list({
+    q: `name='${config.targetSheet}' and '${config.folder}' in parents and mimeType='application/vnd.google-apps.spreadsheet' and trashed = false`,
+    fields: 'files(id,name)',
+    pageSize: 10
+  });
+  const files = res.data.files || [];
+  return files.length > 0 ? files[0].id : null;
+}
+
+async function getLatestTweetsSheet(sheets, spreadsheetId) {
   const meta = await sheets.spreadsheets.get({ spreadsheetId });
   // Just pick the first (or only) tab, regardless of its name
   return meta.data.sheets[0]?.properties.title;
@@ -130,99 +155,104 @@ async function processNewRows() {
   isProcessing = true;
   
   try {
+    const config = getConfig();
     const auth = await getAuth();
-  const sheets = google.sheets({ version: 'v4', auth });
+    const sheets = google.sheets({ version: 'v4', auth });
   
-  // Find the latest Ethereum Tweets spreadsheet file
-  const latestFile = await getLatestEthereumTweetsSpreadsheet(auth);
-  if (!latestFile) {
-    console.log('No Ethereum Tweets spreadsheet file found.');
-    return;
-  }
-  
-  const spreadsheetId = latestFile.id;
-  
-  // Reset .last_row.txt if a new sheet is detected, and create/update .last_sheet_id.txt
-  const LAST_SHEET_ID_FILE = '.last_sheet_id.txt';
-  let lastSheetId = '';
-  if (fs.existsSync(LAST_SHEET_ID_FILE)) {
-    lastSheetId = fs.readFileSync(LAST_SHEET_ID_FILE, 'utf8');
-  }
-  if (spreadsheetId !== lastSheetId) {
-    fs.writeFileSync(LAST_ROW_FILE, '0');
-    fs.writeFileSync(LAST_SHEET_ID_FILE, spreadsheetId);
-  }
-  
-  const latestSheet = await getLatestEthereumTweetsSheet(sheets, spreadsheetId);
-  if (!latestSheet) {
-    console.log('No Ethereum Tweets sheet/tab found in the latest file.');
-    return;
-  }
-  
-  // Get all data
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: `${latestSheet}!A:D`
-  });
-  const rows = res.data.values || [];
-  if (rows.length === 0) return; // No data
-
-  let lastProcessedRow = 0;
-  if (fs.existsSync(LAST_ROW_FILE)) {
-    lastProcessedRow = parseInt(fs.readFileSync(LAST_ROW_FILE, 'utf8'), 10);
-  }
-
-  // Get already processed (Relevant Tweets) to avoid duplicates
-  const targetSpreadsheetId = process.env.GOOGLE_TARGET_SPREADSHEET_ID;
-  const relevantRes = await sheets.spreadsheets.values.get({
-    spreadsheetId: targetSpreadsheetId,
-    range: `${RELEVANT_SHEET}!A:E`
-  });
-  const relevantRows = relevantRes.data.values || [];
-  const processedSet = new Set(relevantRows.map(r => r[3])); // Use tweet link as unique key
-
-  // Only process each new row once per run
-  for (let i = lastProcessedRow; i < rows.length; i++) {
-    const [createdAt, handle, tweetText, tweetLink] = rows[i];
-    if (processedSet.has(tweetLink)) {
-      // Update last processed row even for duplicates
-      fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
-      continue;
+    // Find the latest tweets spreadsheet file
+    const latestFile = await getLatestTweetsSpreadsheet(auth);
+    if (!latestFile) {
+      console.log(`No ${config.sheetPrefix} spreadsheet file found.`);
+      return;
     }
-
-    const followerCount = await getFollowerCount(handle);
-    if (followerCount <= 2000) {
-      console.log(`Tweet ${i + 1} FAIL (Follower count too low)`);
-      // Update last processed row after processing (fail)
-      fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
-      continue;
+  
+    const spreadsheetId = latestFile.id;
+  
+    // Reset .last_row.txt if a new sheet is detected, and create/update .last_sheet_id.txt
+    const LAST_SHEET_ID_FILE = '.last_sheet_id.txt';
+    let lastSheetId = '';
+    if (fs.existsSync(LAST_SHEET_ID_FILE)) {
+      lastSheetId = fs.readFileSync(LAST_SHEET_ID_FILE, 'utf8');
     }
-
-    const result = await analyzeTweet(tweetText);
-    if (result !== 'PASS') {
-      console.log(`Tweet ${i + 1} FAIL`);
-      // Update last processed row after processing (fail)
-      fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
-      continue;
+    if (spreadsheetId !== lastSheetId) {
+      fs.writeFileSync(LAST_ROW_FILE, '0');
+      fs.writeFileSync(LAST_SHEET_ID_FILE, spreadsheetId);
     }
-
-    const createdAtUTC8 = toUTC8(createdAt);
-    const newRow = [createdAtUTC8, handle, tweetText, tweetLink, followerCount];
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: targetSpreadsheetId,
-      range: `${RELEVANT_SHEET}!A:E`,
-      valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
-      resource: { values: [newRow] }
+  
+    const latestSheet = await getLatestTweetsSheet(sheets, spreadsheetId);
+    if (!latestSheet) {
+      console.log(`No ${config.sheetPrefix} sheet/tab found in the latest file.`);
+      return;
+    }
+  
+    // Get all data
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${latestSheet}!A:D`
     });
-    console.log(`Tweet ${i + 1} PASS`);
-    console.log(`✅ Added relevant tweet: ${tweetLink}`);
-    
-    // Update last processed row after processing (pass)
-    fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
-    
-    await new Promise(r => setTimeout(r, 2000)); // Avoid rate limits
-  }
+    const rows = res.data.values || [];
+    if (rows.length === 0) return; // No data
+
+    let lastProcessedRow = 0;
+    if (fs.existsSync(LAST_ROW_FILE)) {
+      lastProcessedRow = parseInt(fs.readFileSync(LAST_ROW_FILE, 'utf8'), 10);
+    }
+
+    // Get already processed (Relevant Tweets) to avoid duplicates
+    const targetSpreadsheetId = await findTargetSpreadsheet(auth, config);
+    if (!targetSpreadsheetId) {
+      console.log(`Target sheet "${config.targetSheet}" not found in folder`);
+      return;
+    }
+    const relevantRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: targetSpreadsheetId,
+      range: `${RELEVANT_SHEET}!A:E`
+    });
+    const relevantRows = relevantRes.data.values || [];
+    const processedSet = new Set(relevantRows.map(r => r[3])); // Use tweet link as unique key
+
+    // Only process each new row once per run
+    for (let i = lastProcessedRow; i < rows.length; i++) {
+      const [createdAt, handle, tweetText, tweetLink] = rows[i];
+      if (processedSet.has(tweetLink)) {
+        // Update last processed row even for duplicates
+        fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
+        continue;
+      }
+
+      const followerCount = await getFollowerCount(handle);
+      if (followerCount <= config.followersThreshold) {
+        console.log(`Tweet ${i + 1} FAIL (Follower count too low: ${followerCount} <= ${config.followersThreshold})`);
+        // Update last processed row after processing (fail)
+        fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
+        continue;
+      }
+
+      const result = await analyzeTweet(tweetText);
+      if (result !== 'PASS') {
+        console.log(`Tweet ${i + 1} FAIL`);
+        // Update last processed row after processing (fail)
+        fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
+        continue;
+      }
+
+      const createdAtUTC8 = toUTC8(createdAt);
+      const newRow = [createdAtUTC8, handle, tweetText, tweetLink, followerCount];
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: targetSpreadsheetId,
+        range: `${RELEVANT_SHEET}!A:E`,
+        valueInputOption: 'RAW',
+        insertDataOption: 'INSERT_ROWS',
+        resource: { values: [newRow] }
+      });
+      console.log(`Tweet ${i + 1} PASS`);
+      console.log(`✅ Added relevant ${config.name.toLowerCase()} tweet: ${tweetLink}`);
+      
+      // Update last processed row after processing (pass)
+      fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
+      
+      await new Promise(r => setTimeout(r, 2000)); // Avoid rate limits
+    }
   } catch (error) {
     console.error('Error processing rows:', error);
   } finally {
@@ -263,6 +293,8 @@ function stopMonitoring() {
 }
 
 if (require.main === module) {
+  const config = getConfig();
+  
   // Create lock file to indicate monitoring is active
   fs.writeFileSync(LOCK_FILE, process.pid.toString());
 
@@ -284,7 +316,7 @@ if (require.main === module) {
   processNewRows();
   // Then run every 5 minutes
   cronTask = cron.schedule('*/5 * * * *', processNewRows);
-  console.log('Monitoring started. Running every 5 minutes...');
+  console.log(`${config.name} monitoring started. Running every 5 minutes...`);
 }
 
 module.exports = { processNewRows, getMonitoringStatus, stopMonitoring };
