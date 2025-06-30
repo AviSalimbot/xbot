@@ -1,43 +1,16 @@
 Ethereum monitoring started. Running every 5 minutes...
+Already processing, skipping...
+Failed to load profile for @n0yuh: Navigation timeout of 60000 ms exceeded
+Tweet 42 FAIL (Follower count too low: 0 <= 2000)
+Tweet 43 FAIL (Follower count too low: 163 <= 2000)
+Tweet 44 FAIL (Follower count too low: 12 <= 2000)
+Tweet 45 FAIL (Follower count too low: 430 <= 2000)
+Tweet 46 FAIL (Follower count too low: 206 <= 2000)
 Tweet analysis result: PASS
-Tweet 20 PASS
-✅ Added relevant ethereum tweet: https://twitter.com/cryptosmithcoco/status/1939535692549558700
-Tweet 21 FAIL (Follower count too low: 227 <= 2000)
-Tweet 22 FAIL (Follower count too low: 601 <= 2000)
-Tweet 23 FAIL (Follower count too low: 12 <= 2000)
-Tweet analysis result: PASS
-Tweet 24 PASS
-✅ Added relevant ethereum tweet: https://twitter.com/jimmyboolish/status/1939536311498518824
-Tweet analysis result: PASS
-Tweet 25 PASS
-✅ Added relevant ethereum tweet: https://twitter.com/bot_hype13170/status/1939536357828808882
-Tweet 26 FAIL (Follower count too low: 65 <= 2000)
-Tweet 27 FAIL (Follower count too low: 218 <= 2000)
-Tweet 28 FAIL (Follower count too low: 673 <= 2000)
-Tweet 29 FAIL (Follower count too low: 430 <= 2000)
-Tweet analysis result: PASS
-Tweet 30 PASS
-✅ Added relevant ethereum tweet: https://twitter.com/Gro3_/status/1939536735270318081
-Tweet analysis result: FAIL (Analysis timeout)
-Tweet analysis result: FAIL (Analysis timeout)
-Tweet analysis result: FAIL (Analysis timeout)
-Tweet analysis result: FAIL (Analysis timeout)
-Tweet 31 FAIL (Follower count too low: 342 <= 2000)
-Tweet 32 FAIL (Follower count too low: 20 <= 2000)
-Tweet 33 FAIL (Follower count too low: 180 <= 2000)
-Tweet 34 FAIL (Follower count too low: 253 <= 2000)
-Tweet 35 FAIL (Follower count too low: 39 <= 2000)
-Tweet 36 FAIL (Follower count too low: 0 <= 2000)
-Tweet 37 FAIL (Follower count too low: 237 <= 2000)
-Tweet 38 FAIL (Follower count too low: 72 <= 2000)
-Tweet analysis result: PASS
-Tweet 39 PASS
-✅ Added relevant ethereum tweet: https://twitter.com/chainyoda/status/1939538168921063784
-Tweet analysis result: PASS
-Tweet 40 PASS
-✅ Added relevant ethereum tweet: https://twitter.com/TheCurrencyA/status/1939538201472827598
-Tweet analysis result: FAIL (Analysis timeout)
-Tweet analysis result: FAIL (Analysis timeout)
-Tweet 41 FAIL (Follower count too low: 210 <= 2000)
+Tweet 47 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nullpackets/status/1939539062660255787
+Tweet 48 FAIL (Follower count too low: 0 <= 2000)
+Tweet 49 FAIL (Follower count too low: 0 <= 2000)
+Tweet 50 FAIL (Follower count too low: 135 <= 2000)
 Cleaning up and stopping monitoring...
 Cleaning up and stopping monitoring...

@@ -1,18 +1,38 @@
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 const SCRIPT_DIR = __dirname;
-const START_SCRIPT = path.join(SCRIPT_DIR, 'start-monitoring.sh');
+const IS_WINDOWS = os.platform() === 'win32';
+
+// Choose the correct script based on operating system
+const START_SCRIPT = IS_WINDOWS 
+    ? path.join(SCRIPT_DIR, 'start-monitoring.ps1')
+    : path.join(SCRIPT_DIR, 'start-monitoring.sh');
+
 const PID_FILE = path.join(SCRIPT_DIR, '.monitor.pid');
 const LOCK_FILE = path.join(SCRIPT_DIR, '.monitor.lock');
 
+// Log which script will be used
+console.log(`🔧 Platform detected: ${os.platform()}`);
+console.log(`📜 Using monitoring script: ${START_SCRIPT}`);
+
 function executeScript(command) {
     return new Promise((resolve, reject) => {
-        exec(`"${START_SCRIPT}" ${command}`, (error, stdout, stderr) => {
+        // Use the appropriate command based on OS
+        const execCommand = IS_WINDOWS 
+            ? `powershell -ExecutionPolicy Bypass -File "${START_SCRIPT}" ${command}`
+            : `"${START_SCRIPT}" ${command}`;
+            
+        console.log(`🚀 Executing: ${execCommand}`);
+            
+        exec(execCommand, (error, stdout, stderr) => {
             if (error) {
+                console.error(`❌ Script execution failed:`, error);
                 reject({ success: false, message: `Error: ${error.message}`, output: stderr });
             } else {
+                console.log(`✅ Script executed successfully:`, stdout.trim());
                 resolve({ success: true, message: stdout.trim(), output: stdout });
             }
         });
