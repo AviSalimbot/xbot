@@ -9,6 +9,7 @@ const myTopRoute = require('./routes/myTop');
 const engagersRoute = require('./routes/engagers');
 const followRouter = require('./routes/follow');
 const monitorRouter = require('./routes/monitor');
+const topicAssociationRouter = require('./routes/topicAssociation');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/my-top', myTopRoute);
 app.use('/my-engagers', engagersRoute);
 app.use('/follow', followRouter);
 app.use('/monitor', monitorRouter);
+app.use('/topic-association', topicAssociationRouter);
 
 // Server start
 const PORT = process.env.PORT || 3000;

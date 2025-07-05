@@ -1,16 +1,1084 @@
 Ethereum monitoring started. Running every 5 minutes...
-Already processing, skipping...
-Failed to load profile for @n0yuh: Navigation timeout of 60000 ms exceeded
-Tweet 42 FAIL (Follower count too low: 0 <= 2000)
-Tweet 43 FAIL (Follower count too low: 163 <= 2000)
-Tweet 44 FAIL (Follower count too low: 12 <= 2000)
-Tweet 45 FAIL (Follower count too low: 430 <= 2000)
-Tweet 46 FAIL (Follower count too low: 206 <= 2000)
+Tweet 1 FAIL (Follower count too low: 70 <= 2000)
+Tweet 2 FAIL (Follower count too low: 513 <= 2000)
 Tweet analysis result: PASS
-Tweet 47 PASS
-✅ Added relevant ethereum tweet: https://twitter.com/nullpackets/status/1939539062660255787
-Tweet 48 FAIL (Follower count too low: 0 <= 2000)
-Tweet 49 FAIL (Follower count too low: 0 <= 2000)
-Tweet 50 FAIL (Follower count too low: 135 <= 2000)
+Tweet 3 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/CryptoCrewU/status/1941210370149888230
+Tweet 4 FAIL (Follower count too low: 74 <= 2000)
+Tweet 5 FAIL (Follower count too low: 1989 <= 2000)
+Tweet 6 FAIL (Follower count too low: 25 <= 2000)
+Tweet 7 FAIL (Follower count too low: 1794 <= 2000)
+Tweet analysis result: PASS
+Tweet 8 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/hemi_xyz/status/1941210472885231879
+Tweet 9 FAIL (Follower count too low: 93 <= 2000)
+Tweet analysis result: PASS
+Tweet 10 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/EmblemMarkets/status/1941211426753843255
+Tweet 11 FAIL (Follower count too low: 254 <= 2000)
+Tweet 12 FAIL (Follower count too low: 499 <= 2000)
+Tweet analysis result: PASS
+Tweet 13 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/ferz_erz00/status/1941211556567712022
+Tweet 14 FAIL (Follower count too low: 323 <= 2000)
+Tweet 15 FAIL (Follower count too low: 201 <= 2000)
+Tweet 16 FAIL (Follower count too low: 379 <= 2000)
+Tweet 17 FAIL (Follower count too low: 63 <= 2000)
+Tweet analysis result: PASS
+Tweet 18 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nullpackets/status/1941211763384647951
+Already processing, skipping...
+Tweet 19 FAIL (Follower count too low: 409 <= 2000)
+Tweet analysis result: PASS
+Tweet 20 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/dexsignals/status/1941212422574047355
+Tweet 21 FAIL (Follower count too low: 470 <= 2000)
+Tweet 22 FAIL (Follower count too low: 93 <= 2000)
+Tweet analysis result: PASS
+Tweet 23 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/StaniKulechov/status/1941212566132576324
+Tweet analysis result: PASS
+Tweet 24 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/grech29/status/1941212594624397513
+Tweet analysis result: PASS
+Tweet 25 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Kasdorex/status/1941212612886397274
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 26 FAIL (Follower count too low: 1695 <= 2000)
+Tweet 27 FAIL (Follower count too low: 330 <= 2000)
+Tweet 28 FAIL (Follower count too low: 1 <= 2000)
+Tweet 29 FAIL (Follower count too low: 55 <= 2000)
+Tweet analysis result: PASS
+Tweet 30 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Kasdorex/status/1941214000362160600
+Tweet 31 FAIL (Follower count too low: 27 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 32 FAIL (Follower count too low: 616 <= 2000)
+Tweet 33 FAIL (Follower count too low: 28 <= 2000)
+Tweet 34 FAIL (Follower count too low: 94 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 35 FAIL (Follower count too low: 420 <= 2000)
+Tweet 36 FAIL (Follower count too low: 474 <= 2000)
+Tweet 37 FAIL (Follower count too low: 244 <= 2000)
+Tweet 38 FAIL (Follower count too low: 28 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 39 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/themoonshotmeme/status/1941215160674521478
+Tweet 40 FAIL (Follower count too low: 0 <= 2000)
+Tweet 41 FAIL (Follower count too low: 27 <= 2000)
+Tweet 42 FAIL (Follower count too low: 78 <= 2000)
+Tweet analysis result: PASS
+Tweet 43 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/theharleybtc/status/1941215415386112287
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 44 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/DecryptMedia/status/1941215497380315274
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 45 FAIL (Follower count too low: 28 <= 2000)
+Tweet analysis result: PASS
+Tweet 46 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nikmipy/status/1941215553278050462
+Tweet 47 FAIL (Follower count too low: 1569 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 48 FAIL (Follower count too low: 20 <= 2000)
+Tweet 49 FAIL (Follower count too low: 1474 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 50 FAIL (Follower count too low: 59 <= 2000)
+Tweet 51 FAIL (Follower count too low: 1030 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 52 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/fxvnpro/status/1941216325084274989
+Tweet 53 FAIL (Follower count too low: 231 <= 2000)
+Tweet 54 FAIL (Follower count too low: 1507 <= 2000)
+Tweet analysis result: PASS
+Tweet 55 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Crypus_XFINANCE/status/1941216476213674084
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 56 FAIL (Follower count too low: 346 <= 2000)
+Tweet 57 FAIL (Follower count too low: 54 <= 2000)
+Tweet 58 FAIL (Follower count too low: 395 <= 2000)
+Tweet 59 FAIL (Follower count too low: 4 <= 2000)
+Tweet 60 FAIL (Follower count too low: 513 <= 2000)
+Already processing, skipping...
+Tweet 61 FAIL (Follower count too low: 1486 <= 2000)
+Tweet 62 FAIL (Follower count too low: 1516 <= 2000)
+Tweet 63 FAIL (Follower count too low: 2 <= 2000)
+Tweet 64 FAIL (Follower count too low: 61 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 65 FAIL (Follower count too low: 363 <= 2000)
+Tweet 66 FAIL (Follower count too low: 1454 <= 2000)
+Tweet analysis result: PASS
+Tweet 67 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/aicryptopattern/status/1941218034410013149
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 68 FAIL (Follower count too low: 513 <= 2000)
+Tweet 69 FAIL (Follower count too low: 518 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 70 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/TechEqualizer/status/1941218357312881094
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 71 FAIL (Follower count too low: 59 <= 2000)
+Tweet 72 FAIL (Follower count too low: 6 <= 2000)
+Tweet 73 FAIL (Follower count too low: 59 <= 2000)
+Tweet 74 FAIL (Follower count too low: 596 <= 2000)
+Tweet 75 FAIL (Follower count too low: 649 <= 2000)
+Tweet 76 FAIL (Follower count too low: 100 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 77 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/cryptodotnews/status/1941219171339002314
+Tweet 78 FAIL (Follower count too low: 62 <= 2000)
+Tweet 79 FAIL (Follower count too low: 544 <= 2000)
+Tweet 80 FAIL (Follower count too low: 499 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 81 FAIL (Follower count too low: 86 <= 2000)
+Tweet 82 FAIL (Follower count too low: 763 <= 2000)
+Tweet 83 FAIL (Follower count too low: 85 <= 2000)
+Tweet 84 FAIL (Follower count too low: 74 <= 2000)
+Tweet 85 FAIL (Follower count too low: 134 <= 2000)
+Tweet 86 FAIL (Follower count too low: 136 <= 2000)
+Tweet 87 FAIL (Follower count too low: 393 <= 2000)
+Tweet 88 FAIL (Follower count too low: 841 <= 2000)
+Tweet 89 FAIL (Follower count too low: 218 <= 2000)
+Tweet 90 FAIL (Follower count too low: 30 <= 2000)
+Tweet 91 FAIL (Follower count too low: 64 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 92 FAIL (Follower count too low: 1865 <= 2000)
+Tweet 93 FAIL (Follower count too low: 67 <= 2000)
+Tweet 94 FAIL (Follower count too low: 31 <= 2000)
+Tweet 95 FAIL (Follower count too low: 36 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 96 FAIL (Follower count too low: 507 <= 2000)
+Tweet 97 FAIL (Follower count too low: 1989 <= 2000)
+Tweet 98 FAIL (Follower count too low: 372 <= 2000)
+Tweet 99 FAIL (Follower count too low: 275 <= 2000)
+Tweet 100 FAIL (Follower count too low: 1100 <= 2000)
+Failed to load profile for @Minhanh0510: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 101 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Already processing, skipping...
+Failed to load profile for @iyketech07: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 102 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @im_syedhussain: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 103 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @Nnchhill: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 104 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @Roja_Sekari: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 105 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @Fish4AI: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 106 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @katherineluxx: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 107 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @OluwaseunU8064: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 108 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @LucasTodeschin2: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 109 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @atemsales: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 110 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: PASS
+Tweet 111 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/flufworldbot/status/1941224122350006751
+Tweet 112 FAIL (Follower count too low: 393 <= 2000)
+Tweet 113 FAIL (Follower count too low: 0 <= 2000)
+Tweet 114 FAIL (Follower count too low: 456 <= 2000)
+Tweet 115 FAIL (Follower count too low: 1054 <= 2000)
+Tweet analysis result: PASS
+Tweet 116 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Novastro_xyz/status/1941224260032397780
+Tweet 117 FAIL (Follower count too low: 154 <= 2000)
+Tweet 118 FAIL (Follower count too low: 70 <= 2000)
+Tweet analysis result: PASS
+Tweet 119 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/dexsignals/status/1941225284767977597
+Tweet 120 FAIL (Follower count too low: 104 <= 2000)
+Tweet analysis result: PASS
+Tweet 121 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/goldrobesalpha/status/1941225368419172479
+Tweet 122 FAIL (Follower count too low: 61 <= 2000)
+Tweet 123 FAIL (Follower count too low: 39 <= 2000)
+Tweet 124 FAIL (Follower count too low: 74 <= 2000)
+Tweet 125 FAIL (Follower count too low: 266 <= 2000)
+Already processing, skipping...
+Tweet 126 FAIL (Follower count too low: 146 <= 2000)
+Tweet analysis result: PASS
+Tweet 127 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/DonCrypto_/status/1941225561751474443
+Tweet 128 FAIL (Follower count too low: 379 <= 2000)
+Tweet 129 FAIL (Follower count too low: 596 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 130 FAIL (Follower count too low: 62 <= 2000)
+Tweet 131 FAIL (Follower count too low: 172 <= 2000)
+Tweet 132 FAIL (Follower count too low: 26 <= 2000)
+Tweet 133 FAIL (Follower count too low: 37 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 134 FAIL (Follower count too low: 10 <= 2000)
+Tweet 135 FAIL (Follower count too low: 136 <= 2000)
+Tweet 136 FAIL (Follower count too low: 219 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 137 FAIL (Follower count too low: 518 <= 2000)
+Tweet 138 FAIL (Follower count too low: 47 <= 2000)
+Tweet 139 FAIL (Follower count too low: 229 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 140 FAIL (Follower count too low: 1627 <= 2000)
+Tweet analysis result: PASS
+Tweet 141 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/ZeusRebirth/status/1941227731129348436
+Tweet 142 FAIL (Follower count too low: 84 <= 2000)
+Tweet 143 FAIL (Follower count too low: 1642 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 144 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/successkaay/status/1941227846669828170
+Tweet 145 FAIL (Follower count too low: 10 <= 2000)
+Tweet 146 FAIL (Follower count too low: 1100 <= 2000)
+Tweet 147 FAIL (Follower count too low: 750 <= 2000)
+Tweet 148 FAIL (Follower count too low: 436 <= 2000)
+Tweet analysis result: PASS
+Tweet 149 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Cryp_DEV/status/1941228748763955233
+Tweet 150 FAIL (Follower count too low: 166 <= 2000)
+Already processing, skipping...
+Tweet 151 FAIL (Follower count too low: 477 <= 2000)
+Tweet 152 FAIL (Follower count too low: 5 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 153 FAIL (Follower count too low: 626 <= 2000)
+Tweet 154 FAIL (Follower count too low: 230 <= 2000)
+Tweet 155 FAIL (Follower count too low: 1336 <= 2000)
+Tweet 156 FAIL (Follower count too low: 301 <= 2000)
+Tweet 157 FAIL (Follower count too low: 24 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 158 FAIL (Follower count too low: 1547 <= 2000)
+Tweet 159 FAIL (Follower count too low: 258 <= 2000)
+Tweet 160 FAIL (Follower count too low: 740 <= 2000)
+Tweet 161 FAIL (Follower count too low: 57 <= 2000)
+Tweet 162 FAIL (Follower count too low: 3 <= 2000)
+Tweet analysis result: PASS
+Tweet 163 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/0xLotex/status/1941230200366432550
+Tweet 164 FAIL (Follower count too low: 372 <= 2000)
+Tweet 165 FAIL (Follower count too low: 112 <= 2000)
+Tweet 166 FAIL (Follower count too low: 342 <= 2000)
+Tweet analysis result: PASS
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 167 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/ConorSvensson/status/1941230538054041616
+Tweet 168 FAIL (Follower count too low: 1841 <= 2000)
+Tweet 169 FAIL (Follower count too low: 184 <= 2000)
+Tweet 170 FAIL (Follower count too low: 1327 <= 2000)
+Tweet 171 FAIL (Follower count too low: 572 <= 2000)
+Tweet 172 FAIL (Follower count too low: 952 <= 2000)
+Tweet 173 FAIL (Follower count too low: 798 <= 2000)
+Tweet analysis result: PASS
+Tweet 174 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/itskkoma/status/1941231440106226034
+Tweet 175 FAIL (Follower count too low: 237 <= 2000)
+Tweet analysis result: PASS
+Tweet 176 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Hercules_Defi/status/1941231574277894147
+Tweet 177 FAIL (Follower count too low: 427 <= 2000)
+Tweet 178 FAIL (Follower count too low: 76 <= 2000)
+Tweet 179 FAIL (Follower count too low: 147 <= 2000)
+Tweet 180 FAIL (Follower count too low: 518 <= 2000)
+Tweet 181 FAIL (Follower count too low: 1053 <= 2000)
+Tweet 182 FAIL (Follower count too low: 85 <= 2000)
+Tweet 183 FAIL (Follower count too low: 6 <= 2000)
+Tweet 184 FAIL (Follower count too low: 85 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 185 FAIL (Follower count too low: 44 <= 2000)
+Already processing, skipping...
+Tweet 186 FAIL (Follower count too low: 34 <= 2000)
+Tweet analysis result: PASS
+Tweet 187 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nftvaluations/status/1941235618828157070
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 188 FAIL (Follower count too low: 629 <= 2000)
+Tweet 189 FAIL (Follower count too low: 196 <= 2000)
+Tweet analysis result: PASS
+Tweet 190 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Cryptoboss_z/status/1941236364483362994
+Tweet 191 FAIL (Follower count too low: 1899 <= 2000)
+Tweet 192 FAIL (Follower count too low: 31 <= 2000)
+Tweet 193 FAIL (Follower count too low: 6 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 194 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/dexsignals/status/1941236594993922435
+Tweet 195 FAIL (Follower count too low: 276 <= 2000)
+Tweet 196 FAIL (Follower count too low: 1013 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 197 FAIL (Follower count too low: 458 <= 2000)
+Tweet 198 FAIL (Follower count too low: 931 <= 2000)
+Tweet 199 FAIL (Follower count too low: 619 <= 2000)
+Tweet 200 FAIL (Follower count too low: 87 <= 2000)
+Tweet 201 FAIL (Follower count too low: 23 <= 2000)
+Tweet 202 FAIL (Follower count too low: 102 <= 2000)
+Tweet analysis result: PASS
+Tweet 203 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/aymducking/status/1941237597067763815
+Tweet 204 FAIL (Follower count too low: 86 <= 2000)
+Tweet analysis result: PASS
+Tweet 205 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Abscondough/status/1941237658174488883
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 206 FAIL (Follower count too low: 140 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @AbdullahiD6215: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 207 FAIL (Follower count too low: 0 <= 2000)
+Tweet 208 FAIL (Follower count too low: 35 <= 2000)
+Tweet analysis result: PASS
+Tweet 209 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/BitDecoder/status/1941238724177830079
+Tweet 210 FAIL (Follower count too low: 372 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @AbdullahiD6215: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 211 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: PASS
+Tweet 212 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/xyzerobtc/status/1941239155650068895
+Tweet 213 FAIL (Follower count too low: 60 <= 2000)
+Already processing, skipping...
+Tweet analysis result: PASS
+Tweet 214 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/dexsignals/status/1941239225917247861
+Tweet 215 FAIL (Follower count too low: 141 <= 2000)
+Tweet analysis result: PASS
+Tweet 216 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/tinkon__/status/1941239353742897208
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 217 FAIL (Follower count too low: 152 <= 2000)
+Tweet 218 FAIL (Follower count too low: 783 <= 2000)
+Tweet 219 FAIL (Follower count too low: 275 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 220 FAIL (Follower count too low: 380 <= 2000)
+Tweet 221 FAIL (Follower count too low: 47 <= 2000)
+Tweet 222 FAIL (Follower count too low: 461 <= 2000)
+Tweet 223 FAIL (Follower count too low: 0 <= 2000)
+Tweet 224 FAIL (Follower count too low: 571 <= 2000)
+Tweet 225 FAIL (Follower count too low: 154 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 226 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/coinminerss/status/1941240617939423520
+Tweet analysis result: PASS
+Tweet 227 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/EigenPhi_Alert/status/1941240627368427859
+Tweet 228 FAIL (Follower count too low: 112 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 229 FAIL (Follower count too low: 82 <= 2000)
+Tweet 230 FAIL (Follower count too low: 529 <= 2000)
+Tweet 231 FAIL (Follower count too low: 1970 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 232 FAIL (Follower count too low: 378 <= 2000)
+Tweet analysis result: PASS
+Tweet 233 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/SoloJah1/status/1941241455923618263
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 234 FAIL (Follower count too low: 539 <= 2000)
+Tweet 235 FAIL (Follower count too low: 20 <= 2000)
+Tweet 236 FAIL (Follower count too low: 310 <= 2000)
+Tweet 237 FAIL (Follower count too low: 82 <= 2000)
+Tweet 238 FAIL (Follower count too low: 18 <= 2000)
+Tweet 239 FAIL (Follower count too low: 1227 <= 2000)
+Tweet analysis result: PASS
+Tweet 240 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Nebraskangooner/status/1941242861720392064
+Tweet 241 FAIL (Follower count too low: 1889 <= 2000)
+Tweet 242 FAIL (Follower count too low: 529 <= 2000)
+Tweet 243 FAIL (Follower count too low: 931 <= 2000)
+Already processing, skipping...
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 244 FAIL (Follower count too low: 186 <= 2000)
+Tweet 245 FAIL (Follower count too low: 326 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 246 FAIL (Follower count too low: 198 <= 2000)
+Tweet 247 FAIL (Follower count too low: 16 <= 2000)
+Tweet 248 FAIL (Follower count too low: 233 <= 2000)
+Tweet 249 FAIL (Follower count too low: 1919 <= 2000)
+Tweet analysis result: PASS
+Tweet 250 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/eviszen/status/1941244046783152596
+Tweet 251 FAIL (Follower count too low: 596 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 252 FAIL (Follower count too low: 892 <= 2000)
+Tweet analysis result: PASS
+Tweet 253 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/mcwhalescalls/status/1941244182825480568
+Tweet 254 FAIL (Follower count too low: 276 <= 2000)
+Tweet 255 FAIL (Follower count too low: 8 <= 2000)
+Tweet 256 FAIL (Follower count too low: 498 <= 2000)
+Tweet analysis result: PASS
+Tweet 257 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/eviszen/status/1941244358797426948
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 258 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/aymducking/status/1941244443618836869
+Tweet analysis result: PASS
+Tweet 259 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/im_serPAI/status/1941244513738953161
+Tweet 260 FAIL (Follower count too low: 206 <= 2000)
+Tweet 261 FAIL (Follower count too low: 1431 <= 2000)
+Tweet 262 FAIL (Follower count too low: 1974 <= 2000)
+Tweet 263 FAIL (Follower count too low: 20 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 264 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/W__ETH/status/1941245330189947186
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 265 FAIL (Follower count too low: 1073 <= 2000)
+Tweet 266 FAIL (Follower count too low: 757 <= 2000)
+Tweet 267 FAIL (Follower count too low: 499 <= 2000)
+Already processing, skipping...
+Tweet 268 FAIL (Follower count too low: 223 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 269 FAIL (Follower count too low: 2 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 270 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nett0eth/status/1941246414987620418
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 271 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nett0eth/status/1941246448835686767
+Tweet analysis result: PASS
+Tweet 272 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nett0eth/status/1941246456817443032
+Tweet analysis result: PASS
+Tweet 273 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nett0eth/status/1941246462408704478
+Tweet analysis result: PASS
+Tweet 274 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Defiyana01/status/1941246521573507425
+Tweet 275 FAIL (Follower count too low: 9 <= 2000)
+Tweet 276 FAIL (Follower count too low: 191 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 277 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nftvaluations/status/1941246680549970403
+Tweet analysis result: PASS
+Tweet 278 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nftvaluations/status/1941246708010082310
+Tweet 279 FAIL (Follower count too low: 378 <= 2000)
+Tweet 280 FAIL (Follower count too low: 942 <= 2000)
+Tweet 281 FAIL (Follower count too low: 942 <= 2000)
+Tweet 282 FAIL (Follower count too low: 372 <= 2000)
+Tweet 283 FAIL (Follower count too low: 17 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 284 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Web3__Youth/status/1941247402322874513
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 285 FAIL (Follower count too low: 223 <= 2000)
+Tweet 286 FAIL (Follower count too low: 23 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 287 FAIL (Follower count too low: 18 <= 2000)
+Tweet 288 FAIL (Follower count too low: 162 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 289 FAIL (Follower count too low: 571 <= 2000)
+Tweet 290 FAIL (Follower count too low: 230 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 291 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Ambasca_1/status/1941249119823253723
+Tweet analysis result: PASS
+Tweet 292 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/NitroFrogTokens/status/1941249153520238666
+Already processing, skipping...
+Tweet analysis result: PASS
+Tweet 293 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/dexsignals/status/1941249299452772500
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 294 FAIL (Follower count too low: 125 <= 2000)
+Tweet 295 FAIL (Follower count too low: 1565 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 296 FAIL (Follower count too low: 1712 <= 2000)
+Tweet analysis result: PASS
+Tweet 297 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/PepeCryptoNerd/status/1941249576616497461
+Tweet 298 FAIL (Follower count too low: 127 <= 2000)
+Tweet 299 FAIL (Follower count too low: 1304 <= 2000)
+Tweet 300 FAIL (Follower count too low: 297 <= 2000)
+Tweet 301 FAIL (Follower count too low: 1076 <= 2000)
+Tweet analysis result: PASS
+Tweet 302 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/francescoswiss/status/1941250214977011990
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 303 FAIL (Follower count too low: 96 <= 2000)
+Tweet 304 FAIL (Follower count too low: 219 <= 2000)
+Tweet 305 FAIL (Follower count too low: 1116 <= 2000)
+Tweet 306 FAIL (Follower count too low: 395 <= 2000)
+Tweet 307 FAIL (Follower count too low: 173 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 308 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/koin_milyoner/status/1941250667139699106
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 309 FAIL (Follower count too low: 11 <= 2000)
+Tweet 310 FAIL (Follower count too low: 1116 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 311 FAIL (Follower count too low: 91 <= 2000)
+Tweet 312 FAIL (Follower count too low: 180 <= 2000)
+Tweet 313 FAIL (Follower count too low: 411 <= 2000)
+Tweet 314 FAIL (Follower count too low: 504 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 315 FAIL (Follower count too low: 743 <= 2000)
+Tweet 316 FAIL (Follower count too low: 1257 <= 2000)
+Tweet 317 FAIL (Follower count too low: 1712 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 318 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Bit_Montie/status/1941251962412085727
+Tweet 319 FAIL (Follower count too low: 1 <= 2000)
+Tweet 320 FAIL (Follower count too low: 51 <= 2000)
+Already processing, skipping...
+Tweet analysis result: PASS
+Tweet 321 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/FigoETH/status/1941252968810160437
+Tweet 322 FAIL (Follower count too low: 142 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 323 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/spaceridersbot/status/1941253112246710501
+Tweet 324 FAIL (Follower count too low: 1284 <= 2000)
+Tweet analysis result: PASS
+Tweet 325 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/FigoETH/status/1941253192253419542
+Tweet 326 FAIL (Follower count too low: 99 <= 2000)
+Tweet 327 FAIL (Follower count too low: 9 <= 2000)
+Tweet 328 FAIL (Follower count too low: 677 <= 2000)
+Tweet 329 FAIL (Follower count too low: 515 <= 2000)
+Failed to load profile for @MayaOnETH: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 330 FAIL (Follower count too low: 0 <= 2000)
+Tweet 331 FAIL (Follower count too low: 35 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 332 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/spaceridersbot/status/1941253615718392245
+Tweet analysis result: PASS
+Tweet 333 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/spaceridersbot/status/1941253699940003903
+Tweet 334 FAIL (Follower count too low: 147 <= 2000)
+Tweet 335 FAIL (Follower count too low: 13 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 336 FAIL (Follower count too low: 499 <= 2000)
+Tweet analysis result: PASS
+Tweet 337 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/TitansClubNFT/status/1941254216716054687
+Tweet analysis result: PASS
+Tweet 338 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/TheDefiDog/status/1941254309636874474
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 339 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/GravezMusic/status/1941255572021707195
+Tweet 340 FAIL (Follower count too low: 106 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 341 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/DntMindMe__/status/1941255613151051811
+Tweet 342 FAIL (Follower count too low: 128 <= 2000)
+Tweet analysis result: PASS
+Tweet 343 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/coinminerss/status/1941255709183684922
+Tweet 344 FAIL (Follower count too low: 372 <= 2000)
+Tweet 345 FAIL (Follower count too low: 266 <= 2000)
+Tweet 346 FAIL (Follower count too low: 3 <= 2000)
+Already processing, skipping...
+Tweet analysis result: PASS
+Tweet 347 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/EthereumFear/status/1941255733783248939
+Tweet analysis result: PASS
+Tweet 348 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/felixx86/status/1941255780461891985
+Tweet 349 FAIL (Follower count too low: 82 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 350 FAIL (Follower count too low: 1181 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 351 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Eveleyan/status/1941255869263642851
+Tweet analysis result: PASS
+Tweet 352 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/zerokn0wledge_/status/1941255871805390922
+Tweet 353 FAIL (Follower count too low: 926 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 354 FAIL (Follower count too low: 2 <= 2000)
+Tweet 355 FAIL (Follower count too low: 732 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 356 FAIL (Follower count too low: 1828 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 357 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/maxidoteth/status/1941257400021025016
+Tweet 358 FAIL (Follower count too low: 571 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 359 FAIL (Follower count too low: 732 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @Loxhybride: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 360 FAIL (Follower count too low: 0 <= 2000)
+Tweet 361 FAIL (Follower count too low: 68 <= 2000)
+Tweet analysis result: PASS
+Tweet 362 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/build_on_bob/status/1941257713444430134
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 363 FAIL (Follower count too low: 86 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 364 FAIL (Follower count too low: 19 <= 2000)
+Tweet 365 FAIL (Follower count too low: 679 <= 2000)
+Tweet 366 FAIL (Follower count too low: 30 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 367 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/MemeCoin_Track/status/1941258482180845945
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 368 FAIL (Follower count too low: 930 <= 2000)
+Tweet 369 FAIL (Follower count too low: 19 <= 2000)
+Tweet 370 FAIL (Follower count too low: 183 <= 2000)
+Tweet 371 FAIL (Follower count too low: 10 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 372 FAIL (Follower count too low: 395 <= 2000)
+Already processing, skipping...
+Tweet analysis result: PASS
+Tweet 373 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/rickcrites/status/1941259252670038369
+Tweet 374 FAIL (Follower count too low: 555 <= 2000)
+Tweet 375 FAIL (Follower count too low: 513 <= 2000)
+Tweet 376 FAIL (Follower count too low: 69 <= 2000)
+Tweet 377 FAIL (Follower count too low: 161 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 378 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/fockgeorgieboy/status/1941260129028145438
+Tweet analysis result: PASS
+Tweet 379 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/fockgeorgieboy/status/1941260141929824541
+Tweet analysis result: PASS
+Tweet 380 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/fockgeorgieboy/status/1941260182593601767
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 381 FAIL (Follower count too low: 377 <= 2000)
+Tweet analysis result: PASS
+Tweet 382 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/theWeb3Jess/status/1941260339527762348
+Tweet 383 FAIL (Follower count too low: 71 <= 2000)
+Tweet analysis result: PASS
+Tweet 384 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/sassal0x/status/1941260476417245555
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 385 FAIL (Follower count too low: 385 <= 2000)
+Failed to load profile for @_ibayyythea: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 386 FAIL (Follower count too low: 73 <= 2000)
+Tweet 387 FAIL (Follower count too low: 842 <= 2000)
+Tweet 388 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 389 FAIL (Follower count too low: 513 <= 2000)
+Tweet 390 FAIL (Follower count too low: 43 <= 2000)
+Tweet 391 FAIL (Follower count too low: 23 <= 2000)
+Tweet 392 FAIL (Follower count too low: 1478 <= 2000)
+Tweet analysis result: PASS
+Tweet 393 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Matt41145588/status/1941261886730928279
+Tweet analysis result: PASS
+Tweet 394 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nett0eth/status/1941261912492413154
+Tweet 395 FAIL (Follower count too low: 555 <= 2000)
+Tweet 396 FAIL (Follower count too low: 6 <= 2000)
+Tweet 397 FAIL (Follower count too low: 377 <= 2000)
+Tweet 398 FAIL (Follower count too low: 92 <= 2000)
+Tweet 399 FAIL (Follower count too low: 499 <= 2000)
+Tweet analysis result: PASS
+Tweet 400 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/pamelawright/status/1941262647363764581
+Tweet 401 FAIL (Follower count too low: 18 <= 2000)
+Tweet 402 FAIL (Follower count too low: 23 <= 2000)
+Tweet 403 FAIL (Follower count too low: 2 <= 2000)
+Tweet 404 FAIL (Follower count too low: 888 <= 2000)
+Tweet 405 FAIL (Follower count too low: 1642 <= 2000)
+Tweet 406 FAIL (Follower count too low: 557 <= 2000)
+Tweet 407 FAIL (Follower count too low: 377 <= 2000)
+Tweet analysis result: PASS
+Tweet 408 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nftvaluations/status/1941263546433556733
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 409 FAIL (Follower count too low: 85 <= 2000)
+Tweet 410 FAIL (Follower count too low: 195 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 411 FAIL (Follower count too low: 372 <= 2000)
+Already processing, skipping...
+Tweet 412 FAIL (Follower count too low: 85 <= 2000)
+Tweet analysis result: PASS
+Tweet 413 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/AdrianoFeria/status/1941264285532893528
+Tweet 414 FAIL (Follower count too low: 64 <= 2000)
+Tweet 415 FAIL (Follower count too low: 910 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 416 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/xcopybot/status/1941264554270282044
+Tweet 417 FAIL (Follower count too low: 27 <= 2000)
+Tweet 418 FAIL (Follower count too low: 2 <= 2000)
+Tweet 419 FAIL (Follower count too low: 1735 <= 2000)
+Tweet 420 FAIL (Follower count too low: 925 <= 2000)
+Tweet 421 FAIL (Follower count too low: 416 <= 2000)
+Tweet 422 FAIL (Follower count too low: 511 <= 2000)
+Tweet 423 FAIL (Follower count too low: 377 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 424 FAIL (Follower count too low: 67 <= 2000)
+Tweet 425 FAIL (Follower count too low: 768 <= 2000)
+Tweet 426 FAIL (Follower count too low: 571 <= 2000)
+Tweet analysis result: PASS
+Tweet 427 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/ncpcole/status/1941265997404491997
+Tweet 428 FAIL (Follower count too low: 2 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 429 FAIL (Follower count too low: 1899 <= 2000)
+Tweet 430 FAIL (Follower count too low: 487 <= 2000)
+Tweet 431 FAIL (Follower count too low: 990 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 432 FAIL (Follower count too low: 1738 <= 2000)
+Tweet analysis result: PASS
+Tweet 433 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/SereinScripts/status/1941266767076261927
+Tweet analysis result: PASS
+Tweet 434 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/DntMindMe__/status/1941266836399775784
+Tweet 435 FAIL (Follower count too low: 25 <= 2000)
+Tweet 436 FAIL (Follower count too low: 68 <= 2000)
+Already processing, skipping...
+Tweet 437 FAIL (Follower count too low: 395 <= 2000)
+Tweet analysis result: PASS
+Tweet 438 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/NeoPepeProtocol/status/1941267779702632666
+Tweet analysis result: PASS
+Tweet 439 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/DntMindMe__/status/1941267861806494104
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 440 FAIL (Follower count too low: 5 <= 2000)
+Tweet analysis result: PASS
+Tweet 441 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/n0acls/status/1941267921306779698
+Tweet 442 FAIL (Follower count too low: 1 <= 2000)
+Tweet 443 FAIL (Follower count too low: 195 <= 2000)
+Tweet 444 FAIL (Follower count too low: 888 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 445 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/forgottenone235/status/1941268377097609682
+Tweet 446 FAIL (Follower count too low: 53 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 447 FAIL (Follower count too low: 795 <= 2000)
+Tweet 448 FAIL (Follower count too low: 220 <= 2000)
+Tweet 449 FAIL (Follower count too low: 96 <= 2000)
+Tweet 450 FAIL (Follower count too low: 35 <= 2000)
+Tweet analysis result: PASS
+Tweet 451 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/0xWeb3Mayor/status/1941269149852074295
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 452 FAIL (Follower count too low: 642 <= 2000)
+Tweet 453 FAIL (Follower count too low: 518 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 454 FAIL (Follower count too low: 2 <= 2000)
+Tweet analysis result: PASS
+Tweet 455 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/dexsignals/status/1941269418459435085
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 456 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/dexsignals/status/1941270078311514409
+Tweet 457 FAIL (Follower count too low: 2 <= 2000)
+Tweet 458 FAIL (Follower count too low: 84 <= 2000)
+Tweet 459 FAIL (Follower count too low: 20 <= 2000)
+Already processing, skipping...
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @0nProc3sS: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 460 FAIL (Follower count too low: 1976 <= 2000)
+Tweet 461 FAIL (Follower count too low: 7 <= 2000)
+Tweet 462 FAIL (Follower count too low: 16 <= 2000)
+Failed to load profile for @DokenERC: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
+Failed to load profile for @DokenERC: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
+Tweet 463 FAIL (Follower count too low: 74 <= 2000)
+Tweet 464 FAIL (Follower count too low: 2 <= 2000)
+Failed to load profile for @LegitBo39863048: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
+Tweet 465 FAIL (Follower count too low: 338 <= 2000)
+Tweet analysis result: PASS
+Tweet 466 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/OTTER_LEGODS/status/1941271041420165159
+Tweet 467 FAIL (Follower count too low: 543 <= 2000)
+Tweet 468 FAIL (Follower count too low: 972 <= 2000)
+Tweet 469 FAIL (Follower count too low: 287 <= 2000)
+Tweet 470 FAIL (Follower count too low: 134 <= 2000)
+Tweet 471 FAIL (Follower count too low: 3 <= 2000)
+Tweet 472 FAIL (Follower count too low: 84 <= 2000)
+Tweet 473 FAIL (Follower count too low: 7 <= 2000)
+Tweet 474 FAIL (Follower count too low: 5 <= 2000)
+Failed to load profile for @jobair8351: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 475 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/jobair8351/status/1941271905232924677
+Tweet 476 FAIL (Follower count too low: 378 <= 2000)
+Tweet analysis result: PASS
+Tweet 477 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Esongsofficial/status/1941272305801613459
+Failed to load profile for @alltcoinera: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @alltcoinera: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
+Tweet 478 FAIL (Follower count too low: 197 <= 2000)
+Tweet 479 FAIL (Follower count too low: 1589 <= 2000)
+Tweet 480 FAIL (Follower count too low: 372 <= 2000)
+Tweet analysis result: PASS
+Tweet 481 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Lo9hl/status/1941272738796274080
+Tweet 482 FAIL (Follower count too low: 233 <= 2000)
+Tweet 483 FAIL (Follower count too low: 52 <= 2000)
+Tweet 484 FAIL (Follower count too low: 509 <= 2000)
+Tweet 485 FAIL (Follower count too low: 276 <= 2000)
+Tweet 486 FAIL (Follower count too low: 137 <= 2000)
+Tweet 487 FAIL (Follower count too low: 0 <= 2000)
+Tweet 488 FAIL (Follower count too low: 26 <= 2000)
+Tweet 489 FAIL (Follower count too low: 571 <= 2000)
+Tweet 490 FAIL (Follower count too low: 1 <= 2000)
+Tweet analysis result: PASS
+Tweet 491 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/dexsignals/status/1941274608101155173
+Failed to load profile for @_shogunate: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 492 FAIL (Follower count too low: 0 <= 2000)
+Tweet 493 FAIL (Follower count too low: 259 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 494 FAIL (Follower count too low: 117 <= 2000)
+Tweet 495 FAIL (Follower count too low: 405 <= 2000)
+Tweet 496 FAIL (Follower count too low: 1992 <= 2000)
+Already processing, skipping...
+Tweet 497 FAIL (Follower count too low: 358 <= 2000)
+Tweet 498 FAIL (Follower count too low: 288 <= 2000)
+Failed to load profile for @Towertech_: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 499 FAIL (Follower count too low: 476 <= 2000)
+Tweet 500 FAIL (Follower count too low: 355 <= 2000)
+Tweet 501 FAIL (Follower count too low: 585 <= 2000)
+Failed to load profile for @818Kimi70891: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
+Tweet 502 FAIL (Follower count too low: 891 <= 2000)
+Tweet analysis result: PASS
+Tweet 503 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/AFRICANMETA/status/1941275854451114037
+Tweet 504 FAIL (Follower count too low: 960 <= 2000)
+Tweet 505 FAIL (Follower count too low: 395 <= 2000)
+Tweet 506 FAIL (Follower count too low: 4 <= 2000)
+Tweet 507 FAIL (Follower count too low: 3 <= 2000)
+Tweet 508 FAIL (Follower count too low: 557 <= 2000)
+Tweet 509 FAIL (Follower count too low: 930 <= 2000)
+Tweet 510 FAIL (Follower count too low: 44 <= 2000)
+Tweet 511 FAIL (Follower count too low: 224 <= 2000)
+Tweet 512 FAIL (Follower count too low: 6 <= 2000)
+Tweet 513 FAIL (Follower count too low: 3 <= 2000)
+Tweet 514 FAIL (Follower count too low: 518 <= 2000)
+Tweet analysis result: PASS
+Tweet 515 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/rickcrites/status/1941277873215623499
+Tweet 516 FAIL (Follower count too low: 85 <= 2000)
+Tweet 517 FAIL (Follower count too low: 1 <= 2000)
+Tweet 518 FAIL (Follower count too low: 8 <= 2000)
+Tweet 519 FAIL (Follower count too low: 170 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 520 FAIL (Follower count too low: 556 <= 2000)
+Tweet 521 FAIL (Follower count too low: 456 <= 2000)
+Tweet 522 FAIL (Follower count too low: 979 <= 2000)
+Tweet 523 FAIL (Follower count too low: 1593 <= 2000)
+Tweet analysis result: PASS
+Tweet 524 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Cheeryjoe/status/1941279089572315520
+Tweet analysis result: PASS
+Tweet 525 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/JosephLeelee3/status/1941279257126441366
+Tweet 526 FAIL (Follower count too low: 0 <= 2000)
+Already processing, skipping...
+Tweet 527 FAIL (Follower count too low: 42 <= 2000)
+Tweet 528 FAIL (Follower count too low: 500 <= 2000)
+Tweet 529 FAIL (Follower count too low: 1157 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 530 FAIL (Follower count too low: 69 <= 2000)
+Tweet 531 FAIL (Follower count too low: 67 <= 2000)
+Tweet analysis result: PASS
+Tweet 532 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/layh7931/status/1941280412854325282
+Tweet 533 FAIL (Follower count too low: 285 <= 2000)
+Tweet analysis result: PASS
+Tweet 534 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/EmblemMarkets/status/1941280573151969402
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 535 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 536 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/nullpackets/status/1941280864622813518
+Tweet 537 FAIL (Follower count too low: 55 <= 2000)
+Tweet 538 FAIL (Follower count too low: 1739 <= 2000)
+Tweet 539 FAIL (Follower count too low: 42 <= 2000)
+Tweet 540 FAIL (Follower count too low: 372 <= 2000)
+Tweet analysis result: PASS
+Tweet 541 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/Confipaul09/status/1941281333507961009
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 542 FAIL (Follower count too low: 87 <= 2000)
+Tweet 543 FAIL (Follower count too low: 90 <= 2000)
+Already processing, skipping...
+Tweet analysis result: PASS
+Tweet 544 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/TheCryptoRekt/status/1941281632746459637
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 545 FAIL (Follower count too low: 465 <= 2000)
+Tweet 546 FAIL (Follower count too low: 465 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: PASS
+Tweet 547 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/TitansClubNFT/status/1941281895708262485
+Tweet 548 FAIL (Follower count too low: 400 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 549 FAIL (Follower count too low: 316 <= 2000)
+Tweet 550 FAIL (Follower count too low: 1694 <= 2000)
+Tweet 551 FAIL (Follower count too low: 571 <= 2000)
+Tweet analysis result: PASS
+Tweet 552 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/LunarCrush/status/1941282945991356522
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 553 FAIL (Follower count too low: 3 <= 2000)
+Tweet analysis result: PASS
+Tweet 554 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/DrEinstein9999/status/1941283101503848635
+Tweet 555 FAIL (Follower count too low: 11 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 556 FAIL (Follower count too low: 64 <= 2000)
+Tweet analysis result: PASS
+Tweet 557 PASS
+✅ Added relevant ethereum tweet: https://twitter.com/richardwams/status/1941283263630442516
+Already processing, skipping...
+Tweet 558 FAIL (Follower count too low: 24 <= 2000)
+Tweet 559 FAIL (Follower count too low: 227 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet 560 FAIL (Follower count too low: 0 <= 2000)
+Tweet 561 FAIL (Follower count too low: 10 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @RoniyKh: Navigating frame was detached
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:102:14)
+    at new Callback (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:24:26)
+    at Connection._rawSend (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:99:26)
+    at Connection.send (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:90:21)
+    at CdpPage.close (/Users/snookysalimbot/Downloads/xbot/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:842:34)
+    at async getFollowerCount (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:145:5)
+    at async processNewRows (/Users/snookysalimbot/Downloads/xbot/monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (/Users/snookysalimbot/Downloads/xbot/node_modules/node-cron/dist/cjs/scheduler/runner.js:70:44)
 Cleaning up and stopping monitoring...
 Cleaning up and stopping monitoring...
