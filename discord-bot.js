@@ -62,35 +62,20 @@ async function handleStartMonitoring(message) {
             return;
         }
 
-        await message.reply(`🚀 Starting monitoring...`);
-
-        // Determine which script to run based on platform
-        const isWindows = process.platform === 'win32';
-        const scriptName = isWindows ? 'start-monitoring.ps1' : './start-monitoring.sh';
-        const scriptPath = path.join(process.cwd(), scriptName);
-
-        // Check if script exists
+        // Check if monitorRelevantTweets.js exists
+        const scriptPath = path.join(process.cwd(), 'monitorRelevantTweets.js');
         if (!fs.existsSync(scriptPath)) {
-            await message.reply(`❌ Script not found: ${scriptName}\nPlease ensure the script exists in the project directory.`);
+            await message.reply(`❌ Script not found: monitorRelevantTweets.js\nPlease ensure the script exists in the project directory.`);
             return;
         }
 
-        // Start the monitoring process
-        let monitoringProcess;
-        
-        if (isWindows) {
-            // Windows PowerShell
-            monitoringProcess = spawn('powershell', ['-ExecutionPolicy', 'Bypass', '-File', scriptPath], {
-                cwd: process.cwd(),
-                stdio: ['ignore', 'pipe', 'pipe']
-            });
-        } else {
-            // Unix/Linux/macOS bash
-            monitoringProcess = spawn('./start-monitoring.sh', [], {
-                cwd: process.cwd(),
-                stdio: ['ignore', 'pipe', 'pipe']
-            });
-        }
+        await message.reply(`🚀 Starting monitoring...`);
+
+        // Start the monitoring process with Node.js
+        const monitoringProcess = spawn('node', ['monitorRelevantTweets.js'], {
+            cwd: process.cwd(),
+            stdio: ['ignore', 'pipe', 'pipe']
+        });
 
         // Store the process
         runningProcesses.set('monitoring', {
@@ -101,11 +86,17 @@ async function handleStartMonitoring(message) {
 
         // Handle process output
         monitoringProcess.stdout.on('data', (data) => {
-            console.log(`Monitoring output: ${data.toString().trim()}`);
+            const output = data.toString().trim();
+            console.log(`Monitoring output: ${output}`);
+            // Optionally send important output to Discord channel
+            // message.channel.send(`📊 ${output}`);
         });
 
         monitoringProcess.stderr.on('data', (data) => {
-            console.error(`Monitoring error: ${data.toString().trim()}`);
+            const error = data.toString().trim();
+            console.error(`Monitoring error: ${error}`);
+            // Optionally send errors to Discord channel
+            // message.channel.send(`❌ Error: ${error}`);
         });
 
         // Handle process exit
@@ -138,49 +129,33 @@ async function handleStopMonitoring(message) {
     try {
         const monitoring = runningProcesses.get('monitoring');
         
-        // Check for actual running monitoring processes even if not in our Map
-        const { exec } = require('child_process');
-        const checkProcess = () => new Promise((resolve) => {
-            exec('pgrep -f "monitorRelevantTweets.js"', (error, stdout) => {
-                resolve(stdout.trim() !== '');
-            });
-        });
-        
-        const hasRunningProcess = await checkProcess();
-        
-        if (!monitoring && !hasRunningProcess) {
+        if (!monitoring) {
             await message.reply(`ℹ️ No monitoring process is currently running.`);
             return;
         }
 
         await message.reply(`🛑 Stopping monitoring...`);
 
-        // Kill the tracked process if it exists
-        if (monitoring) {
+        // Kill the monitoring process
+        try {
+            // Try graceful termination first
             monitoring.process.kill('SIGTERM');
+            
+            // Force kill after 5 seconds if still running
+            setTimeout(() => {
+                if (!monitoring.process.killed) {
+                    monitoring.process.kill('SIGKILL');
+                }
+            }, 5000);
+            
+        } catch (killError) {
+            console.error('Error killing process:', killError);
         }
+
+        // Remove from running processes
+        runningProcesses.delete('monitoring');
         
-        // Also run the stop script to ensure all processes are killed
-        const stopProcess = spawn('./stop-monitoring.sh', [], {
-            cwd: process.cwd(),
-            stdio: ['ignore', 'pipe', 'pipe']
-        });
-        
-        stopProcess.on('close', async (code) => {
-            runningProcesses.delete('monitoring');
-            if (code === 0) {
-                await message.channel.send(`✅ Monitoring stopped successfully.`);
-            } else {
-                await message.channel.send(`⚠️ Stop script exited with code ${code}, but monitoring should be stopped.`);
-            }
-        });
-        
-        // Force kill any remaining processes after 10 seconds
-        setTimeout(async () => {
-            exec('pkill -9 -f "monitorRelevantTweets.js"', () => {
-                // Process killed, no need to report unless there was an issue
-            });
-        }, 10000);
+        await message.channel.send(`✅ Monitoring stopped successfully.`);
 
     } catch (error) {
         console.error('Error stopping monitoring:', error);
@@ -193,7 +168,7 @@ async function handleMonitoringStatus(message) {
         const monitoring = runningProcesses.get('monitoring');
         
         if (!monitoring) {
-            await message.reply(`📊 **Monitoring Status:** Not running\n\nUse \`start monitoring <topic>\` to begin monitoring.`);
+            await message.reply(`📊 **Monitoring Status:** Not running\n\nUse \`start monitoring\` to begin monitoring.`);
             return;
         }
 
@@ -206,6 +181,7 @@ async function handleMonitoringStatus(message) {
 **Started:** ${monitoring.startTime.toLocaleString()}
 **Uptime:** ${hours}h ${minutes}m ${seconds}s
 **Process ID:** ${monitoring.process.pid}
+**Script:** monitorRelevantTweets.js
 
 Use \`stop monitoring\` to stop the process.`);
 
@@ -218,7 +194,7 @@ Use \`stop monitoring\` to stop the process.`);
 async function handleHelp(message) {
     const helpText = `🤖 **XBot Monitoring Commands**
 
-\`start monitoring\` - Start monitoring
+\`start monitoring\` - Start monitoring with monitorRelevantTweets.js
 \`stop monitoring\` - Stop the current monitoring process
 \`monitoring status\` or \`status\` - Check monitoring status
 \`help monitoring\` - Show this help message
@@ -254,7 +230,11 @@ process.on('SIGINT', () => {
     // Kill all running monitoring processes
     for (const [name, monitoring] of runningProcesses) {
         console.log(`Stopping ${name} process...`);
-        monitoring.process.kill('SIGTERM');
+        try {
+            monitoring.process.kill('SIGTERM');
+        } catch (error) {
+            console.error(`Error stopping ${name}:`, error.message);
+        }
     }
     
     client.destroy();

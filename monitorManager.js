@@ -60,9 +60,17 @@ async function stopMonitoring() {
 async function getMonitoringStatus() {
     try {
         const result = await executeScript('status');
+        // Parse the output to determine if monitoring is running
+        let isMonitoring = false;
+        if (result && result.message) {
+            // Check for the phrase 'Monitoring is running' in the output
+            if (result.message.includes('Monitoring is running')) {
+                isMonitoring = true;
+            }
+        }
         return {
             success: true,
-            isMonitoring: true,
+            isMonitoring,
             message: result.message
         };
     } catch (error) {
