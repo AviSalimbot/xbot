@@ -83,6 +83,9 @@ stop_monitoring() {
         kill -9 "$PID" 2>/dev/null
     fi
     
+    # Force kill any remaining monitorRelevantTweets.js processes
+    pkill -9 -f "monitorRelevantTweets.js" 2>/dev/null
+    
     # Clean up files
     rm -f "$PID_FILE"
     rm -f "$LOCK_FILE"
