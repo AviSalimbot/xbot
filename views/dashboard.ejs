@@ -47,6 +47,12 @@
 					<span class="text">Follow Accounts</span>
 				</a>
 			</li>
+			<li>
+				<a href="#" id="topicAssociationBtn">
+					<i class='bx bxs-network-chart'></i>
+					<span class="text">Topic Association</span>
+				</a>
+			</li>
 		</ul>
 	</section>
 	<!-- SIDEBAR -->
@@ -92,6 +98,10 @@
 						<div class="welcome-option" data-action="follow">
 							<i class='bx bxs-user-plus'></i>
 							<span>Follow Accounts</span>
+						</div>
+						<div class="welcome-option" data-action="topic-association">
+							<i class='bx bxs-network-chart'></i>
+							<span>Topic Association</span>
 						</div>
 					</div>
 				</div>
@@ -154,8 +164,11 @@
 				case 'follow':
 					document.querySelector('#sidebar .side-menu.top li:nth-child(4)').classList.add('active');
 					break;
-				case 'monitor':
+				case 'topic-association':
 					document.querySelector('#sidebar .side-menu.top li:nth-child(5)').classList.add('active');
+					break;
+				case 'monitor':
+					document.querySelector('#sidebar .side-menu.top li:nth-child(6)').classList.add('active');
 					break;
 			}
 		}
@@ -193,6 +206,14 @@
 			subTitle.textContent = 'Users';
 		});
 
+		document.getElementById('topicAssociationBtn').addEventListener('click', () => {
+			activateSidebarItem('topic-association');
+			showResults();
+			loadTopicAssociation();
+			resultsTitle.textContent = 'Topic Association';
+			subTitle.textContent = 'Generate Reply Suggestions';
+		});
+
 
 		// Welcome screen button event listeners
 		document.querySelectorAll('.welcome-option').forEach(option => {
@@ -224,6 +245,12 @@
 						followAccounts();
 						resultsTitle.textContent = 'Follow Accounts';
 						subTitle.textContent = 'Users';
+						break;
+					case 'topic-association':
+						showResults();
+						loadTopicAssociation();
+						resultsTitle.textContent = 'Topic Association';
+						subTitle.textContent = 'Generate Reply Suggestions';
 						break;
 				}
 			});
@@ -463,6 +490,249 @@
 				statusDiv.textContent = 'Error stopping monitoring.';
 				statusDiv.className = 'status-message status-error';
 			}
+		}
+
+		async function loadTopicAssociation() {
+			container.innerHTML = '';
+			statusDiv.style.display = 'none';
+
+			// Create Topic Association interface
+			container.innerHTML = `
+				<div class="topic-association-container">
+					<div class="topic-form">
+						<div class="form-section">
+							<h3>Topic 1 (Broader Topic)</h3>
+							<div class="input-group">
+								<label for="topic1">Enter a broader topic or theme:</label>
+								<input type="text" id="topic1" placeholder="e.g., Artificial Intelligence, DeFi, Climate Change" />
+								<small style="color: var(--dark-grey); font-size: 12px; margin-top: 4px; display: block;">
+									This topic will be used to generate connections and reply suggestions
+								</small>
+							</div>
+						</div>
+						
+						<div class="form-section">
+							<h3>Topic 2 (Tweets from <span id="configuredTopicName">Configured</span> Folder)</h3>
+							<div class="input-group">
+								<label for="availableSheets">Select a sheet from your <span id="configuredTopicName2">configured</span> folder:</label>
+								<select id="availableSheets" disabled>
+									<option value="">Loading available sheets...</option>
+								</select>
+								<button type="button" id="refreshSheetsBtn" style="margin-top: 8px; padding: 8px 16px; background: var(--blue); color: white; border: none; border-radius: 4px; cursor: pointer;">
+									<i class='bx bx-refresh'></i> Refresh Sheets
+								</button>
+							</div>
+							<div class="input-group">
+								<label for="sheetRange">Row Range (optional):</label>
+								<input type="text" id="sheetRange" placeholder="e.g., 1:10 (or leave empty for all data)" />
+								<small style="color: var(--dark-grey); font-size: 12px; margin-top: 4px; display: block;">
+									Just enter row numbers like "1:10" or "2:20". Columns A-E will be automatically included.
+								</small>
+							</div>
+						</div>
+						
+						<div class="form-actions">
+							<button id="drawConnectionsBtn" class="draw-connections-btn">
+								<i class='bx bx-network-chart'></i>
+								Draw Connections
+							</button>
+						</div>
+					</div>
+					
+					<div id="suggestions-container" class="suggestions-container" style="display: none;">
+						<h3>Generated Reply Suggestions</h3>
+						<div id="suggestions-content"></div>
+					</div>
+				</div>
+			`;
+
+			// Add event listeners
+			document.getElementById('drawConnectionsBtn').addEventListener('click', drawConnections);
+			document.getElementById('refreshSheetsBtn').addEventListener('click', loadAvailableSheets);
+			
+			// Load sheets automatically when the interface loads
+			loadAvailableSheets();
+		}
+
+		// Function to load available sheets from the configured topic folder
+		async function loadAvailableSheets() {
+			const availableSheets = document.getElementById('availableSheets');
+			
+			try {
+				availableSheets.innerHTML = '<option value="">Loading sheets...</option>';
+				
+				const response = await fetch('/topic-association/sheets');
+				const data = await response.json();
+				
+				if (data.success && data.sheets.length > 0) {
+					// Update the UI to show the configured topic name
+					document.getElementById('configuredTopicName').textContent = data.topicName;
+					document.getElementById('configuredTopicName2').textContent = data.topicName;
+					
+					availableSheets.innerHTML = '<option value="">Select a sheet...</option>';
+					data.sheets.forEach(sheet => {
+						const option = document.createElement('option');
+						option.value = sheet.id;
+						option.textContent = sheet.name;
+						availableSheets.appendChild(option);
+					});
+					availableSheets.disabled = false;
+				} else {
+					availableSheets.innerHTML = '<option value="">No sheets found in configured folder</option>';
+					availableSheets.disabled = true;
+				}
+			} catch (error) {
+				availableSheets.innerHTML = '<option value="">Error loading sheets</option>';
+				availableSheets.disabled = true;
+				console.error('Error loading sheets:', error);
+			}
+		}
+
+		async function drawConnections() {
+			const topic1 = document.getElementById('topic1').value.trim();
+			const sheetId = document.getElementById('availableSheets').value;
+			const sheetRange = document.getElementById('sheetRange').value.trim();
+
+			if (!topic1) {
+				statusDiv.textContent = 'Please enter a broader topic.';
+				statusDiv.className = 'status-message status-error';
+				statusDiv.style.display = '';
+				return;
+			}
+
+			if (!sheetId) {
+				statusDiv.textContent = 'Please select a sheet from the available options.';
+				statusDiv.className = 'status-message status-error';
+				statusDiv.style.display = '';
+				return;
+			}
+
+			// Validate range format if provided
+			if (sheetRange && !/^\d+:\d+$/.test(sheetRange) && !/^[A-Z]+\d+:[A-Z]+\d+$/.test(sheetRange) && !/^[A-Z]+:[A-Z]+$/.test(sheetRange)) {
+				statusDiv.textContent = 'Invalid range format. Use formats like "1:10" or leave empty.';
+				statusDiv.className = 'status-message status-error';
+				statusDiv.style.display = '';
+				return;
+			}
+
+			statusDiv.textContent = 'Generating connections and reply suggestions...';
+			statusDiv.className = 'status-message';
+			statusDiv.style.display = '';
+
+			try {
+				const response = await fetch('/topic-association', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						topic1,
+						sheetId,
+						sheetRange
+					})
+				});
+
+				const data = await response.json();
+
+				if (data.success) {
+					statusDiv.textContent = data.message;
+					statusDiv.className = 'status-message status-success';
+					
+					// Display suggestions
+					displaySuggestions(data.suggestions);
+				} else {
+					statusDiv.textContent = data.message;
+					statusDiv.className = 'status-message status-error';
+					
+					// Show "no connections" message instead of hiding the suggestions container
+					displayNoConnections();
+				}
+			} catch (error) {
+				statusDiv.textContent = 'Error generating connections: ' + error.message;
+				statusDiv.className = 'status-message status-error';
+			}
+		}
+
+		function displaySuggestions(suggestions) {
+			const suggestionsContainer = document.getElementById('suggestions-container');
+			const suggestionsContent = document.getElementById('suggestions-content');
+			
+			suggestionsContent.innerHTML = suggestions.map((suggestion, index) => `
+				<div class="suggestion-item">
+					<div class="original-tweet">
+						<div class="tweet-header">
+							<h4>Tweet ${index + 1}</h4>
+							${suggestion.date && suggestion.date !== 'N/A' ? 
+								`<div class="tweet-date">📅 ${suggestion.date}</div>` : 
+								''}
+							<div class="tweet-meta">
+								<span class="tweet-handle">${suggestion.tweetHandle || '@unknown'}</span>
+								${suggestion.tweetUrl && suggestion.tweetUrl !== 'N/A' ? 
+									`<a href="${suggestion.tweetUrl}" target="_blank" class="tweet-link">🔗 View Tweet</a>` : 
+									''}
+								${suggestion.followerCount && suggestion.followerCount !== 'N/A' ? 
+									`<span class="follower-count">👥 ${suggestion.followerCount}</span>` : 
+									''}
+							</div>
+						</div>
+						<p class="tweet-text">${suggestion.originalTweet}</p>
+						<div class="connection-info">
+							<strong>Connection:</strong> ${suggestion.connection}
+						</div>
+					</div>
+					<div class="reply-suggestions">
+						<h5>Reply Suggestions:</h5>
+						<div class="replies-list">
+							${suggestion.replies.map((reply, replyIndex) => `
+								<div class="reply-item">
+									<span class="reply-number">${replyIndex + 1}.</span>
+									<span class="reply-text">${reply}</span>
+									<button class="copy-reply-btn" data-reply="${reply}">
+										<i class='bx bx-copy'></i>
+									</button>
+								</div>
+							`).join('')}
+						</div>
+					</div>
+				</div>
+			`).join('');
+
+			// Add copy functionality
+			document.querySelectorAll('.copy-reply-btn').forEach(btn => {
+				btn.addEventListener('click', () => {
+					const reply = btn.getAttribute('data-reply');
+					navigator.clipboard.writeText(reply).then(() => {
+						btn.innerHTML = '<i class="bx bx-check"></i>';
+						setTimeout(() => {
+							btn.innerHTML = '<i class="bx bx-copy"></i>';
+						}, 2000);
+					});
+				});
+			});
+
+			suggestionsContainer.style.display = 'block';
+		}
+
+		function displayNoConnections() {
+			const suggestionsContainer = document.getElementById('suggestions-container');
+			const suggestionsContent = document.getElementById('suggestions-content');
+			
+			suggestionsContent.innerHTML = `
+				<div class="no-connections-message">
+					<div class="no-connections-icon">🔗❌</div>
+					<h4>No Connections Drawn</h4>
+					<p>Claude CLI was unable to generate connections and reply suggestions.</p>
+					<p>This could be due to:</p>
+					<ul>
+						<li>Invalid API key configuration</li>
+						<li>Claude CLI not available</li>
+						<li>Connection issues</li>
+					</ul>
+					<p>Please check the connection.log file for more details.</p>
+				</div>
+			`;
+			
+			suggestionsContainer.style.display = 'block';
 		}
 	</script>
 </body>

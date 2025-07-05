@@ -7,7 +7,7 @@ router.get('/', async (req, res) => {
       const followedAccounts = await followAccounts();
   
       const successMessage = followedAccounts.length > 0
-        ? `Followed ${followedAccounts.length} accounts! Spreadsheet created.`
+        ? `Followed ${followedAccounts.length} accounts! Row created.`
         : 'No accounts followed.';
   
       // Always respond with JSON for this route:

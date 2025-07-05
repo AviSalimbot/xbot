@@ -39,6 +39,9 @@ project-root/
 
 1. Manually launch Chrome in terminal using:
     open -na "Google Chrome" --args --remote-debugging-port=9222 --user-data-dir="/tmp/chrome-profile"
+    ./start-chrome.sh ethereum 
+    ./start-chrome.sh basketball
+    ./start-chrome.sh crypto
 2. Open x and login.
 3. Launch project on terminal using:
     node server.js
