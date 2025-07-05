@@ -166,9 +166,14 @@ async function getTweetsFromSheet(sheetId, sheetRange) {
   }
 }
 
-// Helper function to generate connections and replies using Claude CLI
+// Helper function to generate connections and replies using Anthropic API
 async function generateConnectionsAndReplies(topic1, tweets) {
-  const { spawn } = require('child_process');
+  const Anthropic = require('@anthropic-ai/sdk');
+  
+  // Initialize Anthropic client
+  const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
   
   // Create a detailed log
   const logEntry = {
@@ -186,147 +191,122 @@ async function generateConnectionsAndReplies(topic1, tweets) {
     }))
   };
   
-  console.log(`🤖 Starting Claude CLI for topic: ${topic1} with ${tweets.length} tweets`);
+  console.log(`🤖 Starting Anthropic API for topic: ${topic1} with ${tweets.length} tweets`);
   
-  return new Promise((resolve) => {
-    // Prepare the prompt for Claude CLI
+  try {
+    // Prepare the prompt for Anthropic API
     const prompt = `You are a clever and engaging Twitter user who replies to tweets by drawing smart or witty connections to broad social topics.
 
-    Input:
+Input:
 
-    Broad Topic: ${topic1}
+Broad Topic: ${topic1}
 
-    Tweets:
-    ${tweets.map((tweet, index) => `${index + 1}. Tweet Text: "${tweet.text}"
-    Tweet Handle: ${tweet.handle}
-    Tweet URL: ${tweet.url}
-    Date: ${tweet.date}`).join('\n\n')}
+Tweets:
+${tweets.map((tweet, index) => `${index + 1}. Tweet Text: "${tweet.text}"
+Tweet Handle: ${tweet.handle}
+Tweet URL: ${tweet.url}
+Date: ${tweet.date}`).join('\n\n')}
 
-    Follow these steps strictly:
-    1. If the Tweet Text contains fewer than 4 meaningful words, or is vague/ambiguous, do not generate any connection or replies.
-      - Instead, return:
-        "connection": "Tweet is too short or vague for meaningful connection to ${topic1}."
-        "replies": []           
-    2. If the tweet is detailed enough to suggest context or opinion, and you can genuinely connect it to ${topic1}, proceed to:
-      - Write a brief connection summary explaining how it relates to ${topic1}.
-      - Generate 5 tweet-length replies (≤280 characters), mixing:
-        - Standalone witty insights (e.g.,
-          "Inflation's got us paying steakhouse prices for rabbit food. At this rate, lettuce gonna be a luxury item soon 🥬📈")
-        - Replies that explicitly mention the original tweet (e.g.,
-          "Just like @handle said — steakhouse prices for lettuce. Inflation’s turning salads into status symbols. https://twitter.com/handle/status/1234567890")
-    3. If no strong connection exists, return:
-      - connection: "No meaningful connection to ${topic1}."
-      - replies: []
-      
-    Tone: Insightful, witty, sarcastic, or casually humorous—just like good Twitter replies.
+Follow these steps strictly:
+1. If the Tweet Text contains fewer than 4 meaningful words, or is vague/ambiguous, do not generate any connection or replies.
+   - Instead, return:
+     "connection": "Tweet is too short or vague for meaningful connection to ${topic1}."
+     "replies": []           
+2. If the tweet is detailed enough to suggest context or opinion, and you can genuinely connect it to ${topic1}, proceed to:
+   - Write a brief connection summary explaining how it relates to ${topic1}.
+   - Generate 5 tweet-length replies (≤280 characters), mixing:
+     - Standalone witty insights (e.g.,
+       "Inflation's got us paying steakhouse prices for rabbit food. At this rate, lettuce gonna be a luxury item soon 🥬📈")
+     - Replies that explicitly mention the original tweet (e.g.,
+       "Just like @handle said — steakhouse prices for lettuce. Inflation's turning salads into status symbols. https://twitter.com/handle/status/1234567890")
+3. If no strong connection exists, return:
+   - connection: "No meaningful connection to ${topic1}."
+   - replies: []
+   
+Tone: Insightful, witty, sarcastic, or casually humorous—just like good Twitter replies.
 
-    Please format your response as a JSON array with this structure:
-    [
-      {
-        "originalTweet": "tweet text",
-        "tweetHandle": "@handle",
-        "tweetUrl": "url",
-        "connection": "brief explanation of how this connects to ${topic1}",
-        "replies": ["reply1", "reply2", "reply3", "reply4", "reply5"]
-      }
-    ]
+Please format your response as a JSON array with this structure:
+[
+  {
+    "originalTweet": "tweet text",
+    "tweetHandle": "@handle",
+    "tweetUrl": "url",
+    "connection": "brief explanation of how this connects to ${topic1}",
+    "replies": ["reply1", "reply2", "reply3", "reply4", "reply5"]
+  }
+]
 
-    Make sure the replies are diverse, witty, and truly connect the tweet content to ${topic1}.`;
+Make sure the replies are diverse, witty, and truly connect the tweet content to ${topic1}.`;
 
-    const claude = spawn('claude', ['-'], { stdio: ['pipe', 'pipe', 'pipe'] });
-    let output = '';
-    let errorOutput = '';
+    console.log(`📝 Sending prompt to Anthropic API (${prompt.length} characters)`);
     
-    console.log(`📝 Sending prompt to Claude CLI (${prompt.length} characters)`);
-    
-    claude.stdin.write(prompt);
-    claude.stdin.end();
-    
-    claude.stdout.on('data', (data) => {
-      output += data.toString();
+    // Make API request
+    const response = await anthropic.messages.create({
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 4000, // Increased for multiple tweet responses
+      temperature: 0.7, // Some creativity for witty replies
+      messages: [{
+        role: 'user',
+        content: prompt
+      }]
     });
     
-    claude.stderr.on('data', (data) => {
-      errorOutput += data.toString();
+    const output = response.content[0].text.trim();
+    
+    console.log(`✅ Anthropic API completed successfully`);
+    console.log(`📄 Raw output length: ${output.length} characters`);
+    
+    // Extract JSON from the response
+    const jsonMatch = output.match(/\[([\s\S]*)\]/);
+    let result;
+    
+    if (jsonMatch) {
+      result = JSON.parse(`[${jsonMatch[1]}]`);
+    } else {
+      // Try to parse the entire response
+      result = JSON.parse(output);
+    }
+    
+    // Enhance API results with original tweet metadata
+    const enhancedResult = result.map((suggestion, index) => {
+      const originalTweet = tweets[index] || {};
+      return {
+        ...suggestion,
+        date: originalTweet.date || suggestion.date,
+        followerCount: originalTweet.followerCount || suggestion.followerCount
+      };
     });
     
-    claude.on('close', (code) => {
-      logEntry.claudeExitCode = code;
-      logEntry.claudeOutput = output.substring(0, 500) + (output.length > 500 ? '...' : '');
-      logEntry.claudeError = errorOutput;
-      
-      if (code !== 0) {
-        console.warn(`❌ Claude CLI exited with code ${code}`);
-        console.warn(`Error output: ${errorOutput}`);
-        logEntry.result = 'failed';
-        logEntry.fallbackUsed = true;
-        
-        // Write log and use fallback
-        writeConnectionLog(logEntry);
-        resolve(generateFallbackData(topic1, tweets));
-        return;
-      }
-      
-      try {
-        console.log(`✅ Claude CLI completed successfully`);
-        console.log(`📄 Raw output length: ${output.length} characters`);
-        
-        const content = output.trim();
-        
-        // Extract JSON from the response
-        const jsonMatch = content.match(/\[([\s\S]*)\]/);
-        let result;
-        
-        if (jsonMatch) {
-          result = JSON.parse(`[${jsonMatch[1]}]`);
-        } else {
-          // Try to parse the entire response
-          result = JSON.parse(content);
-        }
-        
-        // Enhance Claude results with original tweet metadata
-        const enhancedResult = result.map((suggestion, index) => {
-          const originalTweet = tweets[index] || {};
-          return {
-            ...suggestion,
-            date: originalTweet.date || suggestion.date,
-            followerCount: originalTweet.followerCount || suggestion.followerCount
-          };
-        });
-        
-        logEntry.result = 'success';
-        logEntry.repliesGenerated = enhancedResult.length;
-        logEntry.fallbackUsed = false;
-        
-        console.log(`🎯 Successfully generated ${enhancedResult.length} sets of replies`);
-        
-        writeConnectionLog(logEntry);
-        resolve(enhancedResult);
-        
-      } catch (parseError) {
-        console.warn(`❌ Failed to parse Claude response: ${parseError.message}`);
-        console.warn(`Raw output: ${output.substring(0, 200)}...`);
-        
-        logEntry.result = 'parse_failed';
-        logEntry.parseError = parseError.message;
-        logEntry.fallbackUsed = true;
-        
-        writeConnectionLog(logEntry);
-        resolve(generateFallbackData(topic1, tweets));
-      }
-    });
+    logEntry.result = 'success';
+    logEntry.repliesGenerated = enhancedResult.length;
+    logEntry.fallbackUsed = false;
+    logEntry.apiResponse = output.substring(0, 500) + (output.length > 500 ? '...' : '');
     
-    claude.on('error', (error) => {
-      console.warn(`❌ Claude CLI error: ${error.message}`);
+    console.log(`🎯 Successfully generated ${enhancedResult.length} sets of replies`);
+    
+    writeConnectionLog(logEntry);
+    return enhancedResult;
+    
+  } catch (error) {
+    // Check if it's a JSON parsing error
+    if (error.name === 'SyntaxError' || error.message.includes('JSON')) {
+      console.warn(`❌ Failed to parse Anthropic response: ${error.message}`);
       
-      logEntry.result = 'spawn_failed';
-      logEntry.spawnError = error.message;
+      logEntry.result = 'parse_failed';
+      logEntry.parseError = error.message;
       logEntry.fallbackUsed = true;
+    } else {
+      // API or other error
+      console.warn(`❌ Anthropic API error: ${error.message}`);
       
-      writeConnectionLog(logEntry);
-      resolve(generateFallbackData(topic1, tweets));
-    });
-  });
+      logEntry.result = 'api_failed';
+      logEntry.apiError = error.message;
+      logEntry.fallbackUsed = true;
+    }
+    
+    writeConnectionLog(logEntry);
+    return generateFallbackData(topic1, tweets);
+  }
 }
 
 // Helper function to write detailed logs

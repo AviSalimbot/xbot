@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { google } = require('googleapis');
 const puppeteer = require('puppeteer');
-const { analyzeTweet } = require('./twitterScrape');
+const { analyzeTweet } = require('./claude');
 const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
@@ -114,12 +114,16 @@ function toUTC8(dateStr) {
 }
 
 async function getFollowerCount(handle) {
-  const browser = await puppeteer.connect({
-    browserURL: 'http://127.0.0.1:9222'
-  });
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1, height: 1 }); // Minimize visibility
+  let browser = null;
+  let page = null;
+  
   try {
+    browser = await puppeteer.connect({
+      browserURL: 'http://127.0.0.1:9222'
+    });
+    page = await browser.newPage();
+    await page.setViewport({ width: 1, height: 1 }); // Minimize visibility
+    
     await page.goto(`https://x.com/${handle.replace(/^@/, '')}`, { waitUntil: 'networkidle2', timeout: 60000 });
     // Wait for the followers element
     await page.waitForSelector('a[href*="verified_followers"] span > span', { timeout: 15000 });
@@ -138,12 +142,29 @@ async function getFollowerCount(handle) {
     } else {
       followersCount = parseInt(followersText.replace(/,/g, ''), 10);
     }
-    await page.close();
+    
     return Math.round(followersCount) || 0;
+    
   } catch (e) {
     console.error(`Failed to load profile for ${handle}:`, e.message);
-    await page.close();
-    return 0; // or another fallback value
+    return 0; // Return 0 as fallback
+  } finally {
+    // Safely close page and browser
+    try {
+      if (page && !page.isClosed()) {
+        await page.close();
+      }
+    } catch (closeError) {
+      console.error(`Error closing page for ${handle}:`, closeError.message);
+    }
+    
+    try {
+      if (browser && browser.connected) {
+        await browser.disconnect();
+      }
+    } catch (disconnectError) {
+      console.error(`Error disconnecting browser for ${handle}:`, disconnectError.message);
+    }
   }
 }
 
@@ -251,6 +272,9 @@ async function processNewRows() {
       // Update last processed row after processing (pass)
       fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
       
+      // Add a delay to ensure the append operation completes before processing next tweet
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       await new Promise(r => setTimeout(r, 2000)); // Avoid rate limits
     }
   } catch (error) {
@@ -315,7 +339,7 @@ if (require.main === module) {
   // Run immediately when script is executed directly
   processNewRows();
   // Then run every 5 minutes
-  cronTask = cron.schedule('*/5 * * * *', processNewRows);
+  cronTask = cron.schedule('*/2 * * * *', processNewRows);
   console.log(`${config.name} monitoring started. Running every 5 minutes...`);
 }
 

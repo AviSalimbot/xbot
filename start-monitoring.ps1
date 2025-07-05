@@ -7,13 +7,14 @@ $SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $MONITOR_SCRIPT = Join-Path $SCRIPT_DIR "monitorRelevantTweets.js"
 $PID_FILE = Join-Path $SCRIPT_DIR ".monitor.pid"
 $LOCK_FILE = Join-Path $SCRIPT_DIR ".monitor.lock"
+$LOG_FILE = Join-Path $SCRIPT_DIR "monitor.log"
 
 # Function to check if monitoring is already running
 function Test-MonitoringRunning {
     if (Test-Path $PID_FILE) {
-        $PID = Get-Content $PID_FILE
+        $processId = Get-Content $PID_FILE
         try {
-            $process = Get-Process -Id $PID -ErrorAction Stop
+            $process = Get-Process -Id $processId -ErrorAction Stop
             return $true
         }
         catch {
@@ -26,80 +27,107 @@ function Test-MonitoringRunning {
     return $false
 }
 
-# Function to prevent system sleep (Windows equivalent of caffeinate)
+# Function to prevent system sleep using PowerShell execution policy
 function Start-SleepPrevention {
-    Write-Host "🔋 Preventing system sleep..." -ForegroundColor Yellow
+    Write-Host "Preventing system sleep..." -ForegroundColor Yellow
     
-    # Use Windows power management to prevent sleep
-    # This is the Windows equivalent of caffeinate
+    # Create a PowerShell job that prevents sleep by calling SetThreadExecutionState
+    $sleepPreventionScript = @'
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public class PowerManager {
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    public static extern uint SetThreadExecutionState(uint esFlags);
+    
+    public const uint ES_CONTINUOUS = 0x80000000;
+    public const uint ES_SYSTEM_REQUIRED = 0x00000001;
+    public const uint ES_DISPLAY_REQUIRED = 0x00000002;
+}
+"@
+
+# Prevent system sleep and display sleep
+[PowerManager]::SetThreadExecutionState([PowerManager]::ES_CONTINUOUS -bor [PowerManager]::ES_SYSTEM_REQUIRED -bor [PowerManager]::ES_DISPLAY_REQUIRED)
+
+# Keep the job alive
+while ($true) {
+    Start-Sleep -Seconds 30
+    # Refresh the execution state every 30 seconds
+    [PowerManager]::SetThreadExecutionState([PowerManager]::ES_CONTINUOUS -bor [PowerManager]::ES_SYSTEM_REQUIRED -bor [PowerManager]::ES_DISPLAY_REQUIRED)
+}
+'@
+
     try {
-        # Set power scheme to prevent sleep
-        powercfg /change standby-timeout-ac 0
-        powercfg /change standby-timeout-dc 0
-        powercfg /change monitor-timeout-ac 0
-        powercfg /change monitor-timeout-dc 0
-        
-        Write-Host "✅ Sleep prevention activated" -ForegroundColor Green
+        $sleepJob = Start-Job -ScriptBlock ([ScriptBlock]::Create($sleepPreventionScript))
+        $sleepJobPidFile = Join-Path $SCRIPT_DIR ".sleep_job.pid"
+        $sleepJob.Id | Out-File $sleepJobPidFile
+        Write-Host "Sleep prevention activated" -ForegroundColor Green
         return $true
     }
     catch {
-        Write-Host "⚠️  Could not set power management settings. Monitoring will continue but system may sleep." -ForegroundColor Yellow
+        Write-Host "Could not start sleep prevention. Monitoring will continue but system may sleep." -ForegroundColor Yellow
         return $false
     }
 }
 
-# Function to restore normal power settings
+# Function to stop sleep prevention
 function Stop-SleepPrevention {
-    Write-Host "🔋 Restoring normal power settings..." -ForegroundColor Yellow
+    $sleepJobPidFile = Join-Path $SCRIPT_DIR ".sleep_job.pid"
+    if (Test-Path $sleepJobPidFile) {
+        try {
+            $sleepJobId = Get-Content $sleepJobPidFile
+            Get-Job -Id $sleepJobId -ErrorAction Stop | Stop-Job -PassThru | Remove-Job
+            Remove-Item $sleepJobPidFile -Force -ErrorAction SilentlyContinue
+            Write-Host "Sleep prevention stopped" -ForegroundColor Yellow
+        }
+        catch {
+            Write-Host "Could not stop sleep prevention job" -ForegroundColor Yellow
+        }
+    }
+    
+    # Reset execution state to allow normal sleep
     try {
-        # Restore default power settings (15 minutes for AC, 10 minutes for DC)
-        powercfg /change standby-timeout-ac 15
-        powercfg /change standby-timeout-dc 10
-        powercfg /change monitor-timeout-ac 15
-        powercfg /change monitor-timeout-dc 10
-        
-        Write-Host "✅ Normal power settings restored" -ForegroundColor Green
+        Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public class PowerManagerReset {
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    public static extern uint SetThreadExecutionState(uint esFlags);
+    
+    public const uint ES_CONTINUOUS = 0x80000000;
+}
+"@ -ErrorAction SilentlyContinue
+        [PowerManagerReset]::SetThreadExecutionState([PowerManagerReset]::ES_CONTINUOUS)
     }
     catch {
-        Write-Host "⚠️  Could not restore power settings" -ForegroundColor Yellow
+        # Silently continue if we can't reset
     }
 }
 
 # Function to start monitoring
 function Start-Monitoring {
     if (Test-MonitoringRunning) {
-        $PID = Get-Content $PID_FILE
-        Write-Host "Monitoring is already running (PID: $PID)" -ForegroundColor Yellow
+        $processId = Get-Content $PID_FILE
+        Write-Host "Monitoring is already running (PID: $processId)" -ForegroundColor Yellow
         return $false
     }
 
     # Check if monitor script exists
     if (-not (Test-Path $MONITOR_SCRIPT)) {
-        Write-Host "❌ Monitor script not found: $MONITOR_SCRIPT" -ForegroundColor Red
+        Write-Host "Monitor script not found: $MONITOR_SCRIPT" -ForegroundColor Red
         return $false
     }
 
-    Write-Host "🚀 Starting monitoring with sleep prevention..." -ForegroundColor Green
+    Write-Host "Starting monitoring with sleep prevention..." -ForegroundColor Green
     
     # Start sleep prevention
     Start-SleepPrevention
     
-    # Start the monitoring script in the background
-    $logFile = Join-Path $SCRIPT_DIR "monitor.log"
-    
     try {
-        # Start Node.js process in background
-        $processInfo = New-Object System.Diagnostics.ProcessStartInfo
-        $processInfo.FileName = "node"
-        $processInfo.Arguments = "`"$MONITOR_SCRIPT`""
-        $processInfo.WorkingDirectory = $SCRIPT_DIR
-        $processInfo.UseShellExecute = $false
-        $processInfo.RedirectStandardOutput = $true
-        $processInfo.RedirectStandardError = $true
-        
-        $process = New-Object System.Diagnostics.Process
-        $process.StartInfo = $processInfo
-        $process.Start() | Out-Null
+        # Start the monitoring script in background using Start-Process
+        $process = Start-Process -FilePath "node" -ArgumentList "monitorRelevantTweets.js" -WorkingDirectory $SCRIPT_DIR -WindowStyle Hidden -PassThru
         
         # Save PID
         $process.Id | Out-File $PID_FILE
@@ -108,19 +136,21 @@ function Start-Monitoring {
         Start-Sleep -Seconds 2
         
         if (Test-MonitoringRunning) {
-            Write-Host "✅ Monitoring started successfully (PID: $($process.Id))" -ForegroundColor Green
-            Write-Host "📝 Logs: $logFile" -ForegroundColor Cyan
-            Write-Host "🛑 To stop: .\stop-monitoring.ps1" -ForegroundColor Cyan
+            Write-Host "Monitoring started successfully (PID: $($process.Id))" -ForegroundColor Green
+            Write-Host "Logs: $LOG_FILE" -ForegroundColor Cyan
+            Write-Host "To stop: .\start-monitoring.ps1 stop" -ForegroundColor Cyan
             return $true
         } else {
-            Write-Host "❌ Failed to start monitoring" -ForegroundColor Red
+            Write-Host "Failed to start monitoring" -ForegroundColor Red
             Remove-Item $PID_FILE -Force -ErrorAction SilentlyContinue
+            Stop-SleepPrevention
             return $false
         }
     }
     catch {
-        Write-Host "❌ Error starting monitoring: $_" -ForegroundColor Red
+        Write-Host "Error starting monitoring: $_" -ForegroundColor Red
         Remove-Item $PID_FILE -Force -ErrorAction SilentlyContinue
+        Stop-SleepPrevention
         return $false
     }
 }
@@ -129,20 +159,22 @@ function Start-Monitoring {
 function Stop-Monitoring {
     if (-not (Test-MonitoringRunning)) {
         Write-Host "Monitoring is not running" -ForegroundColor Yellow
+        # Still try to clean up sleep prevention
+        Stop-SleepPrevention
         return $false
     }
 
-    $PID = Get-Content $PID_FILE
-    Write-Host "🛑 Stopping monitoring (PID: $PID)..." -ForegroundColor Yellow
+    $processId = Get-Content $PID_FILE
+    Write-Host "Stopping monitoring (PID: $processId)..." -ForegroundColor Yellow
     
     try {
-        # Kill the process
-        Stop-Process -Id $PID -Force -ErrorAction Stop
+        # Kill the main process
+        Stop-Process -Id $processId -Force -ErrorAction Stop
         
         # Wait for process to stop
         for ($i = 1; $i -le 10; $i++) {
             try {
-                Get-Process -Id $PID -ErrorAction Stop | Out-Null
+                Get-Process -Id $processId -ErrorAction Stop | Out-Null
                 Start-Sleep -Seconds 1
             }
             catch {
@@ -152,26 +184,43 @@ function Stop-Monitoring {
         
         # Force kill if still running
         try {
-            Get-Process -Id $PID -ErrorAction Stop | Out-Null
+            Get-Process -Id $processId -ErrorAction Stop | Out-Null
             Write-Host "Force killing process..." -ForegroundColor Yellow
-            Stop-Process -Id $PID -Force -ErrorAction Stop
+            Stop-Process -Id $processId -Force -ErrorAction Stop
         }
         catch {
             # Process already stopped
+        }
+        
+        # Kill any remaining Node.js processes running the monitor script
+        try {
+            Get-WmiObject Win32_Process | Where-Object { 
+                $_.CommandLine -like "*monitorRelevantTweets.js*" 
+            } | ForEach-Object { 
+                Write-Host "Killing remaining monitor process (PID: $($_.ProcessId))" -ForegroundColor Yellow
+                Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+            }
+        }
+        catch {
+            # Continue if we can't clean up remaining processes
         }
         
         # Clean up files
         Remove-Item $PID_FILE -Force -ErrorAction SilentlyContinue
         Remove-Item $LOCK_FILE -Force -ErrorAction SilentlyContinue
         
-        # Restore power settings
+        # Stop sleep prevention
         Stop-SleepPrevention
         
-        Write-Host "✅ Monitoring stopped" -ForegroundColor Green
+        Write-Host "Monitoring stopped" -ForegroundColor Green
         return $true
     }
     catch {
-        Write-Host "❌ Error stopping monitoring: $_" -ForegroundColor Red
+        Write-Host "Error stopping monitoring: $_" -ForegroundColor Red
+        # Still try to clean up
+        Remove-Item $PID_FILE -Force -ErrorAction SilentlyContinue
+        Remove-Item $LOCK_FILE -Force -ErrorAction SilentlyContinue
+        Stop-SleepPrevention
         return $false
     }
 }
@@ -179,25 +228,58 @@ function Stop-Monitoring {
 # Function to get status
 function Get-MonitoringStatus {
     if (Test-MonitoringRunning) {
-        $PID = Get-Content $PID_FILE
-        Write-Host "✅ Monitoring is running (PID: $PID)" -ForegroundColor Green
+        $processId = Get-Content $PID_FILE
+        Write-Host "Monitoring is running (PID: $processId)" -ForegroundColor Green
         
-        # Check power settings
-        try {
-            $powerSettings = powercfg /query | Select-String "Standby"
-            if ($powerSettings) {
-                Write-Host "🔋 Sleep prevention: Active" -ForegroundColor Cyan
-            } else {
-                Write-Host "🔋 Sleep prevention: Unknown" -ForegroundColor Yellow
+        # Check if sleep prevention job is running
+        $sleepJobPidFile = Join-Path $SCRIPT_DIR ".sleep_job.pid"
+        if (Test-Path $sleepJobPidFile) {
+            try {
+                $sleepJobId = Get-Content $sleepJobPidFile
+                $sleepJob = Get-Job -Id $sleepJobId -ErrorAction Stop
+                if ($sleepJob.State -eq "Running") {
+                    Write-Host "Sleep prevention: Active" -ForegroundColor Cyan
+                } else {
+                    Write-Host "Sleep prevention: Inactive" -ForegroundColor Yellow
+                }
             }
+            catch {
+                Write-Host "Sleep prevention: Unknown" -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host "Sleep prevention: Inactive" -ForegroundColor Yellow
         }
-        catch {
-            Write-Host "🔋 Sleep prevention: Unknown" -ForegroundColor Yellow
+        
+        # Show log file size if it exists
+        if (Test-Path $LOG_FILE) {
+            $logSize = (Get-Item $LOG_FILE).Length
+            $logSizeKB = [math]::Round($logSize / 1024, 2)
+            Write-Host "Log file size: ${logSizeKB}KB" -ForegroundColor Cyan
         }
         
         return $true
     } else {
-        Write-Host "❌ Monitoring is not running" -ForegroundColor Red
+        Write-Host "Monitoring is not running" -ForegroundColor Red
+        
+        # Check if sleep prevention is still running even though monitoring stopped
+        $sleepJobPidFile = Join-Path $SCRIPT_DIR ".sleep_job.pid"
+        if (Test-Path $sleepJobPidFile) {
+            try {
+                $sleepJobId = Get-Content $sleepJobPidFile
+                $sleepJob = Get-Job -Id $sleepJobId -ErrorAction Stop
+                if ($sleepJob.State -eq "Running") {
+                    Write-Host "Sleep prevention: Active (orphaned - will be cleaned up)" -ForegroundColor Yellow
+                } else {
+                    Write-Host "Sleep prevention: Inactive" -ForegroundColor Yellow
+                }
+            }
+            catch {
+                Write-Host "Sleep prevention: Inactive" -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host "Sleep prevention: Inactive" -ForegroundColor Yellow
+        }
+        
         return $false
     }
 }
@@ -207,7 +289,42 @@ $action = if ($args.Count -gt 0) { $args[0] } else { "start" }
 
 switch ($action) {
     "start" {
-        Start-Monitoring
+        if (Test-MonitoringRunning) {
+            $processId = Get-Content $PID_FILE
+            Write-Host "Monitoring is already running (PID: $processId)" -ForegroundColor Yellow
+            return
+        }
+
+        Write-Host "Starting monitoring with sleep prevention..." -ForegroundColor Green
+        
+        # Start sleep prevention
+        Start-SleepPrevention
+        
+        try {
+            # Start the monitoring script in background using Start-Process
+            $process = Start-Process -FilePath "node" -ArgumentList "monitorRelevantTweets.js" -WorkingDirectory $SCRIPT_DIR -WindowStyle Hidden -PassThru
+            
+            # Save PID
+            $process.Id | Out-File $PID_FILE
+            
+            # Wait a moment to see if it started successfully
+            Start-Sleep -Seconds 2
+            
+            if (Test-MonitoringRunning) {
+                Write-Host "Monitoring started successfully (PID: $($process.Id))" -ForegroundColor Green
+                Write-Host "Logs: $LOG_FILE" -ForegroundColor Cyan
+                Write-Host "To stop: .\start-monitoring.ps1 stop" -ForegroundColor Cyan
+            } else {
+                Write-Host "Failed to start monitoring" -ForegroundColor Red
+                Remove-Item $PID_FILE -Force -ErrorAction SilentlyContinue
+                Stop-SleepPrevention
+            }
+        }
+        catch {
+            Write-Host "Error starting monitoring: $_" -ForegroundColor Red
+            Remove-Item $PID_FILE -Force -ErrorAction SilentlyContinue
+            Stop-SleepPrevention
+        }
     }
     "stop" {
         Stop-Monitoring
@@ -228,4 +345,4 @@ switch ($action) {
         Write-Host "  status  - Check monitoring status" -ForegroundColor Cyan
         exit 1
     }
-} 
+}

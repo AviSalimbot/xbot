@@ -1,0 +1,457 @@
+Ethereum monitoring started. Running every 5 minutes...
+Tweet 394 FAIL (Follower count too low: 112 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 395 FAIL
+Tweet analysis result: PASS
+Tweet 396 FAIL (Follower count too low: 277 <= 2000)
+Tweet 397 FAIL (Follower count too low: 0 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 398 FAIL
+Tweet analysis result: PASS
+Tweet 399 FAIL (Follower count too low: 87 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 400 FAIL
+Tweet analysis result: PASS
+Tweet 401 FAIL (Follower count too low: 212 <= 2000)
+Tweet 402 FAIL (Follower count too low: 367 <= 2000)
+Tweet 403 FAIL (Follower count too low: 630 <= 2000)
+Tweet 404 FAIL (Follower count too low: 164 <= 2000)
+Tweet 405 FAIL (Follower count too low: 82 <= 2000)
+Tweet 406 FAIL (Follower count too low: 630 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 407 FAIL
+Tweet analysis result: PASS
+Tweet 408 FAIL (Follower count too low: 686 <= 2000)
+Tweet 409 FAIL (Follower count too low: 1259 <= 2000)
+Tweet 410 FAIL (Follower count too low: 1 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 411 FAIL
+Tweet analysis result: PASS
+Tweet 412 FAIL (Follower count too low: 951 <= 2000)
+Tweet 413 FAIL (Follower count too low: 277 <= 2000)
+Tweet 414 FAIL (Follower count too low: 40 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 415 FAIL
+Tweet analysis result: PASS
+Tweet 416 FAIL (Follower count too low: 193 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 417 FAIL
+Tweet analysis result: PASS
+Claude analysis failed: spawn claude ENOENT
+Tweet 418 FAIL
+Tweet analysis result: PASS
+Claude analysis failed: spawn claude ENOENT
+Tweet 419 FAIL
+Tweet analysis result: PASS
+Tweet 420 FAIL (Follower count too low: 1906 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 421 FAIL
+Tweet analysis result: PASS
+Tweet 422 FAIL (Follower count too low: 277 <= 2000)
+Tweet 423 FAIL (Follower count too low: 951 <= 2000)
+Tweet 424 FAIL (Follower count too low: 1 <= 2000)
+Tweet 425 FAIL (Follower count too low: 345 <= 2000)
+Tweet 426 FAIL (Follower count too low: 33 <= 2000)
+Already processing, skipping...
+Failed to load profile for @Chainbull_net: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 427 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @PacArtCollect: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 428 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @BitcoinAshark: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 429 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @CNF_005: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 430 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @coinKaito: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 431 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @kekmememkr: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 432 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @victornawf2: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 433 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @cryptoclub_2019: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 434 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @QuinnQuinn28: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 435 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @Zyllona: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 436 FAIL (Follower count too low: 0 <= 2000)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Failed to load profile for @tunerolambastic: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 437 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @ELLACALLZ: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 438 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @CoinGapeMedia: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 439 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @Emmanuel_div11: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 440 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @web3basheer: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 441 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @BanPadmana65273: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 442 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @0xCryptoPrice: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 443 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @lysergin33: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 444 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @BowTiedPriceBot: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 445 FAIL (Follower count too low: 0 <= 2000)
+Already processing, skipping...
+Failed to load profile for @QuinnQuinn28: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 446 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @TgStyles2: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 447 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @ebrahimpubg26: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 448 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @bernal553234094: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 449 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @srijancse: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 450 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @OnChainShiba: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 451 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @MDKAWSAR410606: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 452 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @ebuka_ike25: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 453 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @khoanguyen1603: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 454 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @mustiahno_: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 455 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @StAnthonyTG: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 456 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @RemilioMarket: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 457 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @LosKruptos: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 458 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @quannm2809: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 459 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @FadiBader20: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 460 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @Badru777e: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 461 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @sonic_chemist: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 462 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @AthuizHustle: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 463 FAIL (Follower count too low: 0 <= 2000)
+Failed to load profile for @KissMyArtDotEth: Waiting for selector `a[href*="verified_followers"] span > span` failed: Protocol error (Runtime.callFunctionOn): Target closed
+Error processing rows: ProtocolError: Protocol error (Target.closeTarget): No target with given id found
+    at <instance_members_initializer> (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\CallbackRegistry.js:102:14)
+    at new Callback (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\CallbackRegistry.js:106:16)
+    at CallbackRegistry.create (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\CallbackRegistry.js:24:26)
+    at Connection._rawSend (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Connection.js:99:26)
+    at Connection.send (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Connection.js:90:21)
+    at CdpPage.close (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Page.js:842:34)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:453:9)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:145:5)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+Error processing rows: TypeError: Failed to fetch browser webSocket URL from http://127.0.0.1:9222/json/version: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getWSEndpoint (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:103:24)
+    at async getConnectionTransport (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:90:31)
+    at async _connectToBrowser (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:60:50)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:117:19)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9222
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9222
+  }
+}
+Tweet 464 FAIL (Follower count too low: 1487 <= 2000)
+Tweet 465 FAIL (Follower count too low: 1856 <= 2000)
+Tweet 466 FAIL (Follower count too low: 136 <= 2000)
+Tweet 467 FAIL (Follower count too low: 190 <= 2000)
+Tweet 468 FAIL (Follower count too low: 25 <= 2000)
+Tweet 469 FAIL (Follower count too low: 1145 <= 2000)
+Tweet 470 FAIL (Follower count too low: 158 <= 2000)
+Tweet 471 FAIL (Follower count too low: 262 <= 2000)
+Tweet 472 FAIL (Follower count too low: 262 <= 2000)
+Tweet 473 FAIL (Follower count too low: 824 <= 2000)
+Tweet 474 FAIL (Follower count too low: 1735 <= 2000)
+Tweet 475 FAIL (Follower count too low: 35 <= 2000)
+Tweet 476 FAIL (Follower count too low: 25 <= 2000)
+Tweet 477 FAIL (Follower count too low: 20 <= 2000)
+Tweet 478 FAIL (Follower count too low: 1398 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 479 FAIL
+Tweet analysis result: PASS
+Tweet 480 FAIL (Follower count too low: 302 <= 2000)
+Tweet 481 FAIL (Follower count too low: 424 <= 2000)
+Tweet 482 FAIL (Follower count too low: 173 <= 2000)
+Tweet 483 FAIL (Follower count too low: 9 <= 2000)
+Tweet 484 FAIL (Follower count too low: 1006 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 485 FAIL
+Tweet analysis result: PASS
+Claude analysis failed: spawn claude ENOENT
+Tweet 486 FAIL
+Tweet analysis result: PASS
+Claude analysis failed: spawn claude ENOENT
+Tweet 487 FAIL
+Tweet analysis result: PASS
+Tweet 488 FAIL (Follower count too low: 354 <= 2000)
+Failed to load profile for @dexsignals: Navigating frame was detached
+Error processing rows: Error: Protocol error: Connection closed.
+    at Connection._rawSend (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Connection.js:97:35)
+    at Connection.send (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Connection.js:90:21)
+    at CdpPage.close (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Page.js:842:34)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:145:5)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Claude analysis failed: spawn claude ENOENT
+Tweet 489 FAIL
+Tweet analysis result: PASS
+Tweet 490 FAIL (Follower count too low: 11 <= 2000)
+Tweet 491 FAIL (Follower count too low: 1055 <= 2000)
+Tweet 492 FAIL (Follower count too low: 147 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 493 FAIL
+Tweet analysis result: PASS
+Tweet 494 FAIL (Follower count too low: 128 <= 2000)
+Tweet 495 FAIL (Follower count too low: 1274 <= 2000)
+Tweet 496 FAIL (Follower count too low: 498 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 497 FAIL
+Tweet analysis result: PASS
+Claude analysis failed: spawn claude ENOENT
+Tweet 498 FAIL
+Tweet analysis result: PASS
+Claude analysis failed: spawn claude ENOENT
+Tweet 499 FAIL
+Tweet analysis result: PASS
+Tweet 500 FAIL (Follower count too low: 256 <= 2000)
+Tweet 501 FAIL (Follower count too low: 91 <= 2000)
+Tweet 502 FAIL (Follower count too low: 0 <= 2000)
+Tweet 503 FAIL (Follower count too low: 0 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 504 FAIL
+Tweet analysis result: PASS
+Claude analysis failed: spawn claude ENOENT
+Tweet 505 FAIL
+Tweet analysis result: PASS
+Tweet 506 FAIL (Follower count too low: 970 <= 2000)
+Tweet 507 FAIL (Follower count too low: 46 <= 2000)
+Tweet 508 FAIL (Follower count too low: 11 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 509 FAIL
+Tweet analysis result: PASS
+Tweet 510 FAIL (Follower count too low: 1258 <= 2000)
+Tweet 511 FAIL (Follower count too low: 32 <= 2000)
+Tweet 512 FAIL (Follower count too low: 119 <= 2000)
+Tweet 513 FAIL (Follower count too low: 108 <= 2000)
+Tweet 514 FAIL (Follower count too low: 1657 <= 2000)
+Tweet 515 FAIL (Follower count too low: 87 <= 2000)
+Tweet 516 FAIL (Follower count too low: 266 <= 2000)
+Tweet 517 FAIL (Follower count too low: 288 <= 2000)
+Tweet 518 FAIL (Follower count too low: 7 <= 2000)
+Tweet 519 FAIL (Follower count too low: 940 <= 2000)
+Tweet 520 FAIL (Follower count too low: 508 <= 2000)
+Claude analysis failed: spawn claude ENOENT
+Tweet 521 FAIL
+Tweet analysis result: PASS
+Tweet 522 FAIL (Follower count too low: 879 <= 2000)
+Tweet 523 FAIL (Follower count too low: 106 <= 2000)
+Tweet 524 FAIL (Follower count too low: 1 <= 2000)
+Tweet 525 FAIL (Follower count too low: 207 <= 2000)
+Failed to load profile for @arlenxbt: Waiting for selector `a[href*="verified_followers"] span > span` failed: Waiting failed: 15000ms exceeded
+Tweet 526 FAIL (Follower count too low: 0 <= 2000)
+Tweet 527 FAIL (Follower count too low: 690 <= 2000)
+Tweet 528 FAIL (Follower count too low: 254 <= 2000)
+Tweet 529 FAIL (Follower count too low: 557 <= 2000)
+Tweet 530 FAIL (Follower count too low: 371 <= 2000)
+Tweet 531 FAIL (Follower count too low: 21 <= 2000)
+Tweet 532 FAIL (Follower count too low: 0 <= 2000)
+Tweet 533 FAIL (Follower count too low: 297 <= 2000)
+Failed to load profile for @Pulse_Finder: Navigating frame was detached
+Error processing rows: Error: Protocol error: Connection closed.
+    at Connection._rawSend (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Connection.js:97:35)
+    at Connection.send (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Connection.js:90:21)
+    at CdpPage.close (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Page.js:842:34)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:145:5)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Tweet analysis result: FAIL (Analysis timeout)
+Error processing rows: TypeError: Failed to fetch browser webSocket URL from http://127.0.0.1:9222/json/version: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getWSEndpoint (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:103:24)
+    at async getConnectionTransport (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:90:31)
+    at async _connectToBrowser (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:60:50)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:117:19)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9222
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9222
+  }
+}
+Error processing rows: TypeError: Failed to fetch browser webSocket URL from http://127.0.0.1:9222/json/version: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getWSEndpoint (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:103:24)
+    at async getConnectionTransport (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:90:31)
+    at async _connectToBrowser (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:60:50)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:117:19)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9222
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9222
+  }
+}
+[2025-07-04T09:50:01.335Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 17:50:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+Error processing rows: TypeError: Failed to fetch browser webSocket URL from http://127.0.0.1:9222/json/version: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getWSEndpoint (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:103:24)
+    at async getConnectionTransport (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:90:31)
+    at async _connectToBrowser (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:60:50)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:117:19)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9222
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9222
+  }
+}
+Error processing rows: TypeError: Failed to fetch browser webSocket URL from http://127.0.0.1:9222/json/version: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getWSEndpoint (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:103:24)
+    at async getConnectionTransport (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:90:31)
+    at async _connectToBrowser (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:60:50)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:117:19)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9222
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9222
+  }
+}
+Error processing rows: TypeError: Failed to fetch browser webSocket URL from http://127.0.0.1:9222/json/version: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getWSEndpoint (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:103:24)
+    at async getConnectionTransport (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:90:31)
+    at async _connectToBrowser (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:60:50)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:117:19)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9222
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9222
+  }
+}
+Error processing rows: TypeError: Failed to fetch browser webSocket URL from http://127.0.0.1:9222/json/version: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getWSEndpoint (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:103:24)
+    at async getConnectionTransport (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:90:31)
+    at async _connectToBrowser (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:60:50)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:117:19)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9222
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9222
+  }
+}
+Error processing rows: TypeError: Failed to fetch browser webSocket URL from http://127.0.0.1:9222/json/version: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getWSEndpoint (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:103:24)
+    at async getConnectionTransport (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:90:31)
+    at async _connectToBrowser (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:60:50)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:117:19)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9222
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9222
+  }
+}
+Error processing rows: TypeError: Failed to fetch browser webSocket URL from http://127.0.0.1:9222/json/version: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getWSEndpoint (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:103:24)
+    at async getConnectionTransport (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:90:31)
+    at async _connectToBrowser (C:\Users\Shane\Downloads\xbot\node_modules\puppeteer-core\lib\cjs\puppeteer\common\BrowserConnector.js:60:50)
+    at async getFollowerCount (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:117:19)
+    at async processNewRows (C:\Users\Shane\Downloads\xbot\monitorRelevantTweets.js:223:29)
+    at async Timeout._onTimeout (C:\Users\Shane\Downloads\xbot\node_modules\node-cron\dist\cjs\scheduler\runner.js:70:44) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9222
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9222
+  }
+}
+[2025-07-04T11:40:37.254Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 18:25:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.259Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 18:30:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.272Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 18:35:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.275Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 18:40:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.278Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 18:45:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.281Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 18:50:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.284Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 18:55:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.289Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 19:00:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.292Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 19:05:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.295Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 19:10:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.297Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 19:15:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.300Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 19:20:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.302Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 19:25:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.305Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 19:30:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.308Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 19:35:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2025-07-04T11:40:37.312Z] [PID: 12588] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Fri Jul 04 2025 19:40:00 GMT+0800 (Philippine Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
