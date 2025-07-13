@@ -366,20 +366,31 @@ async function generateConnectionsWithCLI(prompt, topic1, tweets, logEntry) {
       try {
         console.log(`✅ Claude CLI completed successfully`);
         console.log(`📄 Raw output length: ${output.length} characters`);
-        
         const content = output.trim();
-        
         // Extract JSON from the response
-        const jsonMatch = content.match(/\[([\s\S]*)\]/);
-        let result;
-        
-        if (jsonMatch) {
-          result = JSON.parse(`[${jsonMatch[1]}]`);
+        let jsonContent = content;
+        const codeBlockMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+        if (codeBlockMatch) {
+          jsonContent = codeBlockMatch[1];
         } else {
-          // Try to parse the entire response
-          result = JSON.parse(content);
+          const jsonMatch = content.match(/(\[[\s\S]*\])/);
+          if (jsonMatch) {
+            jsonContent = jsonMatch[1];
+          }
         }
-        
+        let result;
+        try {
+          result = JSON.parse(jsonContent);
+        } catch (parseError) {
+          console.warn(`❌ Failed to parse Claude response: ${parseError.message}`);
+          console.warn(`Full raw output for debugging: ${content}`);
+          logEntry.result = 'parse_failed';
+          logEntry.parseError = parseError.message;
+          logEntry.fallbackUsed = true;
+          writeConnectionLog(logEntry);
+          resolve(generateFallbackData(topic1, tweets));
+          return;
+        }
         // Enhance Claude results with original tweet metadata
         const enhancedResult = result.map((suggestion, index) => {
           const originalTweet = tweets[index] || {};
@@ -389,24 +400,18 @@ async function generateConnectionsWithCLI(prompt, topic1, tweets, logEntry) {
             followerCount: originalTweet.followerCount || suggestion.followerCount
           };
         });
-        
         logEntry.result = 'success';
         logEntry.repliesGenerated = enhancedResult.length;
         logEntry.fallbackUsed = false;
-        
         console.log(`🎯 Successfully generated ${enhancedResult.length} sets of replies`);
-        
         writeConnectionLog(logEntry);
         resolve(enhancedResult);
-        
       } catch (parseError) {
         console.warn(`❌ Failed to parse Claude response: ${parseError.message}`);
-        console.warn(`Raw output: ${output.substring(0, 200)}...`);
-        
+        console.warn(`Full raw output for debugging: ${output}`);
         logEntry.result = 'parse_failed';
         logEntry.parseError = parseError.message;
         logEntry.fallbackUsed = true;
-        
         writeConnectionLog(logEntry);
         resolve(generateFallbackData(topic1, tweets));
       }
