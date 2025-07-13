@@ -294,9 +294,7 @@ async function generateSuggestionsWithCLI(prompt, targetHandle) {
       try {
         console.log(`✅ Claude CLI completed successfully`);
         console.log(`📄 Raw output length: ${output.length} characters`);
-        
         const content = output.trim();
-        
         // Extract JSON from the response
         let jsonContent = content;
         const codeBlockMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
@@ -308,14 +306,20 @@ async function generateSuggestionsWithCLI(prompt, targetHandle) {
             jsonContent = jsonMatch[1];
           }
         }
-        
-        const result = JSON.parse(jsonContent);
+        let result;
+        try {
+          result = JSON.parse(jsonContent);
+        } catch (parseError) {
+          console.warn(`❌ Failed to parse Claude response: ${parseError.message}`);
+          console.warn(`Full raw output for debugging: ${content}`);
+          resolve(null);
+          return;
+        }
         console.log(`✅ Generated ${result.suggestions.length} post suggestions`);
         resolve(result);
-        
       } catch (parseError) {
         console.warn(`❌ Failed to parse Claude response: ${parseError.message}`);
-        console.warn(`Raw output: ${output.substring(0, 200)}...`);
+        console.warn(`Full raw output for debugging: ${output}`);
         resolve(null);
       }
     });
