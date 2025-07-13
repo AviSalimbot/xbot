@@ -233,15 +233,26 @@ async function processNewRows() {
     const processedSet = new Set(relevantRows.map(r => r[3])); // Use tweet link as unique key
 
     // Only process each new row once per run
+    console.log(`Starting to process rows ${lastProcessedRow + 1} to ${rows.length}...`);
     for (let i = lastProcessedRow; i < rows.length; i++) {
+      console.log(`Processing row ${i + 1}: ${rows[i] ? rows[i][1] : 'undefined'}`);
       const [createdAt, handle, tweetText, tweetLink] = rows[i];
       if (processedSet.has(tweetLink)) {
+        console.log(`Row ${i + 1} already processed, skipping...`);
         // Update last processed row even for duplicates
         fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
         continue;
       }
 
-      const followerCount = await getFollowerCount(handle);
+      console.log(`Getting follower count for ${handle}...`);
+      const followerCount = await Promise.race([
+        getFollowerCount(handle),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
+      ]).catch(e => {
+        console.log(`Failed to get follower count for ${handle}: ${e.message}`);
+        return 0;
+      });
+      console.log(`Follower count for ${handle}: ${followerCount}`);
       if (followerCount <= config.followersThreshold) {
         console.log(`Tweet ${i + 1} FAIL (Follower count too low: ${followerCount} <= ${config.followersThreshold})`);
         // Update last processed row after processing (fail)
