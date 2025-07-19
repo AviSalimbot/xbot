@@ -40,8 +40,12 @@ async function findFollowSheet(auth, config) {
   return files.length > 0 ? files[0].id : null;
 }
 
-async function followAccounts() {
+async function followAccounts(customThreshold = null) {
   const config = getConfig();
+  
+  // Use custom threshold if provided, otherwise use config default
+  const effectiveThreshold = customThreshold !== null ? customThreshold : config.followAccountsThreshold;
+  console.log(`🎯 Using follower threshold: ${effectiveThreshold} (${customThreshold !== null ? 'custom' : 'config default'})`);
   const browser = await puppeteer.connect({
     browserURL: 'http://localhost:9222',
   });
@@ -107,7 +111,7 @@ async function followAccounts() {
         // Select follow button by data-testid ending with "-follow"
         const followButton = await profilePage.$('button[data-testid$="-follow"]');
 
-        if (followersCount > config.followAccountsThreshold && followButton) {
+        if (followersCount > effectiveThreshold && followButton) {
           console.log('👉 Following...');
           await followButton.click();
           await new Promise(res => setTimeout(res, 3000));
@@ -121,7 +125,7 @@ async function followAccounts() {
             followers: Math.round(followersCount),
           });
         } else {
-          console.log(`⏭️ Skipping (followers <= ${config.followAccountsThreshold} or already following).`);
+          console.log(`⏭️ Skipping (followers <= ${effectiveThreshold} or already following).`);
         }
 
         await profilePage.close();

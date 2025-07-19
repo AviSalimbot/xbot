@@ -3,6 +3,7 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const { connectCommandPrompt } = require('./prompts/connect-command');
 
 // Create a new client instance
 const client = new Client({
@@ -13,8 +14,11 @@ const client = new Client({
     ],
 });
 
-// Store running processes
-const runningProcesses = new Map();
+// Store running processes and channel topics
+const runningProcesses = new Map(); // "channelId_topic" -> process info
+const channelTopics = new Map(); // channelId -> topic
+const channelFollowerCounts = new Map(); // channelId -> follower count override
+const runningSuggestPosts = new Set(); // Track running suggest post commands
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
@@ -29,6 +33,24 @@ client.on('messageCreate', async (message) => {
 
     const content = message.content.toLowerCase().trim();
     
+    // Check for set commands
+    if (content.startsWith('set ')) {
+        await handleSetCommand(message);
+        return;
+    }
+
+    // Check for get topic command
+    if (content === 'get topic') {
+        await handleGetTopic(message);
+        return;
+    }
+
+    // Check for get follower command
+    if (content === 'get follower') {
+        await handleGetFollower(message);
+        return;
+    }
+
     // Check for start monitoring command
     if (content === 'start monitoring') {
         await handleStartMonitoring(message);
@@ -74,15 +96,202 @@ client.on('messageCreate', async (message) => {
 
 });
 
+async function handleSetCommand(message) {
+    try {
+        const content = message.content.trim();
+        const args = content.substring(4).trim().split(' '); // Remove 'set ' prefix and split by spaces
+        
+        if (args.length === 0) {
+            await message.reply(`❌ Usage: \`set topic <topic>\` or \`set follower [count]\`\n\nExamples:\n• \`set topic ethereum\`\n• \`set follower 5000\`\n• \`set follower\` (uses config default)`);
+            return;
+        }
+        
+        const command = args[0];
+        const channelId = message.channel.id;
+        
+        if (command === 'topic') {
+            await handleSetTopicCommand(message, args);
+        } else if (command === 'follower') {
+            await handleSetFollowerCommand(message, args);
+        } else {
+            // Legacy support: treat "set <topic>" as "set topic <topic>"
+            await handleSetTopicLegacy(message, args);
+        }
+        
+    } catch (error) {
+        console.error('Error in set command:', error);
+        await message.reply(`❌ Error processing set command: ${error.message}`);
+    }
+}
+
+async function handleSetTopicCommand(message, args) {
+    if (args.length !== 2) {
+        await message.reply(`❌ Usage: \`set topic <topic>\`\n\nExample: \`set topic ethereum\``);
+        return;
+    }
+    
+    const topic = args[1];
+    
+    // Validate topic exists in config
+    const fs = require('fs');
+    const path = require('path');
+    const configPath = path.join(process.cwd(), 'config.json');
+    
+    if (!fs.existsSync(configPath)) {
+        await message.reply(`❌ Config file not found.`);
+        return;
+    }
+    
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (!config[topic]) {
+        const availableTopics = Object.keys(config).join(', ');
+        await message.reply(`❌ Invalid topic '${topic}'. Available topics: ${availableTopics}`);
+        return;
+    }
+    
+    // Set topic for this channel
+    const channelId = message.channel.id;
+    channelTopics.set(channelId, topic);
+    
+    await message.reply(`✅ Topic set to **${topic}** for this channel.`);
+}
+
+async function handleSetTopicLegacy(message, args) {
+    // Legacy support for "set ethereum" -> "set topic ethereum"
+    const topic = args[0];
+    
+    // Validate topic exists in config
+    const fs = require('fs');
+    const path = require('path');
+    const configPath = path.join(process.cwd(), 'config.json');
+    
+    if (!fs.existsSync(configPath)) {
+        await message.reply(`❌ Config file not found.`);
+        return;
+    }
+    
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (!config[topic]) {
+        await message.reply(`❌ Usage: \`set topic <topic>\` or \`set follower [count]\`\n\nExamples:\n• \`set topic ethereum\`\n• \`set follower 5000\`\n• \`set follower\` (uses config default)`);
+        return;
+    }
+    
+    // Set topic for this channel
+    const channelId = message.channel.id;
+    channelTopics.set(channelId, topic);
+    
+    await message.reply(`✅ Topic set to **${topic}** for this channel.\n\n⚠️ **Note:** Please use \`set topic ${topic}\` in the future for consistency.`);
+}
+
+async function handleSetFollowerCommand(message, args) {
+    const channelId = message.channel.id;
+    
+    if (args.length === 1) {
+        // "set follower" - clear override, use config default
+        channelFollowerCounts.delete(channelId);
+        await message.reply(`✅ Follower count set to use **config default** for this channel.\nNext monitoring will use the follower threshold from config.json based on the topic.`);
+    } else if (args.length === 2) {
+        // "set follower 5000" - set specific count
+        const followerCount = parseInt(args[1]);
+        
+        if (isNaN(followerCount) || followerCount < 0) {
+            await message.reply(`❌ Invalid follower count. Please provide a positive number.\n\nExample: \`set follower 5000\``);
+            return;
+        }
+        
+        channelFollowerCounts.set(channelId, followerCount);
+        await message.reply(`✅ Follower count set to **${followerCount}** for this channel.\nNext monitoring will use this follower threshold instead of config default.`);
+    } else {
+        await message.reply(`❌ Usage: \`set follower [count]\`\n\nExamples:\n• \`set follower 5000\` - Set specific follower count\n• \`set follower\` - Use config default`);
+    }
+}
+
+async function handleGetTopic(message) {
+    try {
+        const channelId = message.channel.id;
+        const topic = channelTopics.get(channelId);
+        
+        if (!topic) {
+            await message.reply(`❌ No topic set for this channel. Use \`set <topic>\` to set one.`);
+            return;
+        }
+        
+        await message.reply(`📋 Current topic for this channel: **${topic}**`);
+        
+    } catch (error) {
+        console.error('Error getting topic:', error);
+        await message.reply(`❌ Error getting topic: ${error.message}`);
+    }
+}
+
+async function handleGetFollower(message) {
+    try {
+        const channelId = message.channel.id;
+        const topic = channelTopics.get(channelId);
+        const followerOverride = channelFollowerCounts.get(channelId);
+        
+        if (!topic) {
+            await message.reply(`❌ No topic set for this channel. Use \`set topic <topic>\` first.`);
+            return;
+        }
+        
+        // Get config default for comparison
+        const fs = require('fs');
+        const path = require('path');
+        const configPath = path.join(process.cwd(), 'config.json');
+        
+        if (!fs.existsSync(configPath)) {
+            await message.reply(`❌ Config file not found.`);
+            return;
+        }
+        
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        const topicConfig = config[topic];
+        
+        if (!topicConfig) {
+            await message.reply(`❌ Topic '${topic}' not found in config.`);
+            return;
+        }
+        
+        let response = `📊 **Follower Threshold for this channel:**\n\n`;
+        response += `**Topic:** ${topic}\n`;
+        
+        if (followerOverride !== undefined) {
+            response += `**Current Threshold:** ${followerOverride} (override)\n`;
+            response += `**Config Default:** ${topicConfig.followersThreshold}\n\n`;
+            response += `ℹ️ Using override value. Use \`set follower\` to reset to config default.`;
+        } else {
+            response += `**Current Threshold:** ${topicConfig.followersThreshold} (config default)\n\n`;
+            response += `ℹ️ Using config default. Use \`set follower <count>\` to override for this channel.`;
+        }
+        
+        await message.reply(response);
+        
+    } catch (error) {
+        console.error('Error getting follower threshold:', error);
+        await message.reply(`❌ Error getting follower threshold: ${error.message}`);
+    }
+}
+
 async function handleStartMonitoring(message) {
     try {
-        // Check if monitoring is already running
-        if (runningProcesses.has('monitoring')) {
-            await message.reply(`⚠️ Monitoring is already running! Use \`stop monitoring\` first.`);
+        const channelId = message.channel.id;
+        const topic = channelTopics.get(channelId);
+        
+        if (!topic) {
+            await message.reply(`❌ No topic set for this channel. Use \`set <topic>\` first.`);
+            return;
+        }
+        
+        const processKey = `${channelId}_${topic}`;
+        
+        // Check if monitoring is already running for this channel+topic
+        if (runningProcesses.has(processKey)) {
+            await message.reply(`⚠️ Monitoring for **${topic}** is already running in this channel! Use \`stop monitoring\` first.`);
             return;
         }
 
-        await message.reply(`🚀 Starting monitoring...`);
+        await message.reply(`🚀 Starting **${topic}** monitoring for this channel...`);
 
         // Determine which script to run based on platform
         const isWindows = process.platform === 'win32';
@@ -98,25 +307,37 @@ async function handleStartMonitoring(message) {
         // Start the monitoring process
         let monitoringProcess;
         
+        // Get follower count for this channel (override or config default)
+        const followerOverride = channelFollowerCounts.get(channelId);
+        const envVars = { ...process.env, TOPIC: topic };
+        
+        if (followerOverride !== undefined) {
+            envVars.FOLLOWER_OVERRIDE = followerOverride.toString();
+        }
+
         if (isWindows) {
-            // Windows PowerShell
-            monitoringProcess = spawn('powershell', ['-ExecutionPolicy', 'Bypass', '-File', scriptPath], {
+            // Windows PowerShell with topic parameter
+            monitoringProcess = spawn('powershell', ['-ExecutionPolicy', 'Bypass', '-File', scriptPath, 'start', topic], {
                 cwd: process.cwd(),
-                stdio: ['ignore', 'pipe', 'pipe']
+                stdio: ['ignore', 'pipe', 'pipe'],
+                env: envVars
             });
         } else {
-            // Unix/Linux/macOS bash
-            monitoringProcess = spawn('./start-monitoring.sh', [], {
+            // Unix/Linux/macOS bash with topic parameter
+            monitoringProcess = spawn('./start-monitoring.sh', ['start', topic], {
                 cwd: process.cwd(),
-                stdio: ['ignore', 'pipe', 'pipe']
+                stdio: ['ignore', 'pipe', 'pipe'],
+                env: envVars
             });
         }
 
-        // Store the process
-        runningProcesses.set('monitoring', {
+        // Store the process with channel+topic key
+        runningProcesses.set(processKey, {
             process: monitoringProcess,
             startTime: new Date(),
-            channel: message.channel
+            channel: message.channel,
+            topic: topic,
+            channelId: channelId
         });
 
         // Handle process output
@@ -135,7 +356,7 @@ async function handleStartMonitoring(message) {
             if (code === 0) {
                 // Script exited successfully - monitoring is now running in background
                 // Update the stored process info to indicate background operation
-                const monitoringInfo = runningProcesses.get('monitoring');
+                const monitoringInfo = runningProcesses.get(processKey);
                 if (monitoringInfo) {
                     monitoringInfo.isBackground = true;
                     monitoringInfo.startupCompleted = true;
@@ -143,18 +364,18 @@ async function handleStartMonitoring(message) {
                 
             } else {
                 // Script failed to start monitoring
-                runningProcesses.delete('monitoring');
-                message.channel.send(`❌ Monitoring startup failed with exit code ${code}.`);
+                runningProcesses.delete(processKey);
+                message.channel.send(`❌ ${topic} monitoring startup failed with exit code ${code}.`);
             }
         });
 
         monitoringProcess.on('error', (error) => {
-            console.error(`Failed to start monitoring: ${error.message}`);
-            runningProcesses.delete('monitoring');
-            message.channel.send(`❌ Failed to start monitoring: ${error.message}`);
+            console.error(`Failed to start ${topic} monitoring: ${error.message}`);
+            runningProcesses.delete(processKey);
+            message.channel.send(`❌ Failed to start ${topic} monitoring: ${error.message}`);
         });
 
-        await message.channel.send(`✅ Monitoring started successfully!\n🔍 Use \`monitoring status\` to check progress.`);
+        await message.channel.send(`✅ **${topic}** monitoring started successfully for this channel!\n🔍 Use \`status\` to check progress.`);
 
     } catch (error) {
         console.error('Error starting monitoring:', error);
@@ -164,24 +385,46 @@ async function handleStartMonitoring(message) {
 
 async function handleStopMonitoring(message) {
     try {
-        const monitoring = runningProcesses.get('monitoring');
+        const channelId = message.channel.id;
+        const topic = channelTopics.get(channelId);
         
-        // Check for actual running monitoring processes even if not in our Map
+        if (!topic) {
+            await message.reply(`❌ No topic set for this channel. Use \`set <topic>\` first.`);
+            return;
+        }
+        
+        const processKey = `${channelId}_${topic}`;
+        const monitoring = runningProcesses.get(processKey);
+        
+        // Check for actual running monitoring processes for this specific topic
         const { exec } = require('child_process');
-        const checkProcess = () => new Promise((resolve) => {
-            exec('pgrep -f "monitorRelevantTweets.js"', (error, stdout) => {
-                resolve(stdout.trim() !== '');
-            });
+        const checkTopicProcess = () => new Promise((resolve) => {
+            // Check for topic-specific PID file
+            const fs = require('fs');
+            const topicPidFile = `.${topic}_monitor.pid`;
+            
+            if (fs.existsSync(topicPidFile)) {
+                try {
+                    const pid = fs.readFileSync(topicPidFile, 'utf8').trim();
+                    exec(`ps -p ${pid}`, (error, stdout) => {
+                        resolve(!error && stdout.includes(pid));
+                    });
+                } catch (e) {
+                    resolve(false);
+                }
+            } else {
+                resolve(false);
+            }
         });
         
-        const hasRunningProcess = await checkProcess();
+        const hasRunningProcess = await checkTopicProcess();
         
         if (!monitoring && !hasRunningProcess) {
-            await message.reply(`ℹ️ No monitoring process is currently running.`);
+            await message.reply(`ℹ️ No **${topic}** monitoring process is currently running in this channel.`);
             return;
         }
 
-        await message.reply(`🛑 Stopping monitoring...`);
+        await message.reply(`🛑 Stopping **${topic}** monitoring for this channel...`);
 
         // Kill the tracked process if it exists
         if (monitoring) {
@@ -194,33 +437,47 @@ async function handleStopMonitoring(message) {
 
         let stopProcess;
         if (isWindows) {
-            // Use PowerShell for Windows
-            stopProcess = spawn('powershell', ['-ExecutionPolicy', 'Bypass', '-File', stopScriptPath], {
+            // Use PowerShell for Windows with topic parameter
+            stopProcess = spawn('powershell', ['-ExecutionPolicy', 'Bypass', '-File', stopScriptPath, topic], {
                 cwd: process.cwd(),
-                stdio: ['ignore', 'pipe', 'pipe']
+                stdio: ['ignore', 'pipe', 'pipe'],
+                env: { ...process.env, TOPIC: topic }
             });
         } else {
-            // Use Bash for Mac/Linux
-            stopProcess = spawn('./stop-monitoring.sh', [], {
+            // Use Bash for Mac/Linux with topic parameter
+            stopProcess = spawn('./stop-monitoring.sh', [topic], {
                 cwd: process.cwd(),
-                stdio: ['ignore', 'pipe', 'pipe']
+                stdio: ['ignore', 'pipe', 'pipe'],
+                env: { ...process.env, TOPIC: topic }
             });
         }
         
         stopProcess.on('close', async (code) => {
-            runningProcesses.delete('monitoring');
+            runningProcesses.delete(processKey);
             if (code === 0) {
-                await message.channel.send(`✅ Monitoring stopped successfully.`);
+                await message.channel.send(`✅ **${topic}** monitoring stopped successfully for this channel.`);
             } else {
-                await message.channel.send(`⚠️ Stop script exited with code ${code}, but monitoring should be stopped.`);
+                await message.channel.send(`⚠️ Stop script exited with code ${code}, but **${topic}** monitoring should be stopped.`);
             }
         });
         
-        // Force kill any remaining processes after 10 seconds
+        // Force kill any remaining processes for this specific topic after 10 seconds
         setTimeout(async () => {
-            exec('pkill -9 -f "monitorRelevantTweets.js"', () => {
-                // Process killed, no need to report unless there was an issue
-            });
+            const fs = require('fs');
+            const topicPidFile = `.${topic}_monitor.pid`;
+            
+            if (fs.existsSync(topicPidFile)) {
+                try {
+                    const pid = fs.readFileSync(topicPidFile, 'utf8').trim();
+                    exec(`kill -9 ${pid}`, () => {
+                        // Force killed topic-specific process
+                    });
+                    // Clean up PID file
+                    fs.unlinkSync(topicPidFile);
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+            }
         }, 10000);
 
     } catch (error) {
@@ -231,21 +488,52 @@ async function handleStopMonitoring(message) {
 
 async function handleMonitoringStatus(message) {
     try {
-        const monitoring = runningProcesses.get('monitoring');
+        const channelId = message.channel.id;
+        const topic = channelTopics.get(channelId);
         
-        // Check for actual running monitoring processes even if not in our Map
+        if (!topic) {
+            await message.reply(`❌ No topic set for this channel. Use \`set <topic>\` first.`);
+            return;
+        }
+        
+        const processKey = `${channelId}_${topic}`;
+        const monitoring = runningProcesses.get(processKey);
+        
+        // Check for actual running monitoring processes for this specific topic
         const { exec } = require('child_process');
-        const checkProcess = () => new Promise((resolve) => {
-            exec('pgrep -f "monitorRelevantTweets.js"', (_, stdout) => {
-                const pids = stdout.trim().split('\n').filter(pid => pid);
-                resolve(pids.length > 0 ? pids : null);
-            });
+        const checkTopicProcess = () => new Promise((resolve) => {
+            // Check for topic-specific PID file
+            const fs = require('fs');
+            const topicPidFile = `.${topic}_monitor.pid`;
+            
+            if (fs.existsSync(topicPidFile)) {
+                try {
+                    const pid = fs.readFileSync(topicPidFile, 'utf8').trim();
+                    exec(`ps -p ${pid}`, (error, stdout) => {
+                        if (!error && stdout.includes(pid)) {
+                            resolve([pid]);
+                        } else {
+                            // PID file exists but process is dead, clean it up
+                            fs.unlinkSync(topicPidFile);
+                            resolve(null);
+                        }
+                    });
+                } catch (e) {
+                    // Clean up corrupted PID file
+                    try {
+                        fs.unlinkSync(topicPidFile);
+                    } catch (e2) {}
+                    resolve(null);
+                }
+            } else {
+                resolve(null);
+            }
         });
         
-        const runningPids = await checkProcess();
+        const runningPids = await checkTopicProcess();
         
         if (!monitoring && !runningPids) {
-            await message.reply(`📊 **Monitoring Status:** Not running\n\nUse \`start monitoring\` to begin monitoring.`);
+            await message.reply(`📊 **Monitoring Status:** **${topic}** not running in this channel\n\nUse \`start monitoring\` to begin monitoring.`);
             return;
         }
 
@@ -256,7 +544,7 @@ async function handleMonitoringStatus(message) {
             const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((uptime % (1000 * 60)) / 1000);
 
-            let statusMessage = `📊 **Monitoring Status:** Running ✅\n`;
+            let statusMessage = `📊 **Monitoring Status:** **${topic}** running in this channel ✅\n`;
             statusMessage += `**Started:** ${monitoring.startTime.toLocaleString()}\n`;
             statusMessage += `**Uptime:** ${hours}h ${minutes}m ${seconds}s\n`;
             statusMessage += `**Mode:** Background process\n`;
@@ -265,17 +553,17 @@ async function handleMonitoringStatus(message) {
                 statusMessage += `**Process ID(s):** ${runningPids.join(', ')}\n`;
             }
             
-            statusMessage += `\nUse \`stop monitoring\` to stop the process.`;
+            statusMessage += `\nUse \`stop monitoring\` to stop **${topic}** monitoring for this channel.`;
             
             await message.reply(statusMessage);
         } else if (runningPids) {
             // Monitoring running but not started via Discord bot
-            await message.reply(`📊 **Monitoring Status:** Running ✅
+            await message.reply(`📊 **Monitoring Status:** **${topic}** running ✅
 **Mode:** External process
 **Process ID(s):** ${runningPids.join(', ')}
 
 Monitoring was started outside of Discord bot.
-Use \`stop monitoring\` to stop the process.`);
+Use \`stop monitoring\` to stop **${topic}** monitoring for this channel.`);
         }
 
     } catch (error) {
@@ -566,48 +854,7 @@ async function generateConnectionsAndRepliesForConnect(topic1, tweets) {
     
     console.log(`🤖 Starting Claude ${isWindows ? 'API' : 'CLI'} for topic: ${topic1} with ${tweets.length} tweets`);
     
-    const prompt = `You are a clever and engaging Twitter user who replies to tweets by drawing smart or witty connections to broad social topics.
-
-Input:
-
-Broad Topic: ${topic1}
-
-Tweets:
-${tweets.map((tweet, index) => `${index + 1}. Tweet Text: "${tweet.text}"
-Tweet Handle: ${tweet.handle}
-Tweet URL: ${tweet.url}
-Date: ${tweet.date}`).join('\n\n')}
-
-Follow these steps strictly:
-1. If the Tweet Text contains fewer than 4 meaningful words, or is vague/ambiguous, do not generate any connection or replies.
-  - Instead, return:
-    "connection": "Tweet is too short or vague for meaningful connection to ${topic1}."
-    "replies": []           
-2. If the tweet is detailed enough to suggest context or opinion, and you can genuinely connect it to ${topic1}, proceed to:
-  - Write a brief connection summary explaining how it relates to ${topic1}.
-  - Generate 5 tweet-length replies (≤280 characters), mixing:
-    - Standalone witty insights (e.g.,
-      "Inflation's got us paying steakhouse prices for rabbit food. At this rate, lettuce gonna be a luxury item soon 🥬📈")
-    - Replies that explicitly mention the original tweet (e.g.,
-      "Just like @handle said — steakhouse prices for lettuce. Inflation's turning salads into status symbols. https://twitter.com/handle/status/1234567890")
-3. If no strong connection exists, return:
-  - connection: "No meaningful connection to ${topic1}."
-  - replies: []
-  
-Tone: Insightful, witty, sarcastic, or casually humorous—just like good Twitter replies.
-
-Please format your response as a JSON array with this structure:
-[
-  {
-    "originalTweet": "tweet text",
-    "tweetHandle": "@handle",
-    "tweetUrl": "url",
-    "connection": "brief explanation of how this connects to ${topic1}",
-    "replies": ["reply1", "reply2", "reply3", "reply4", "reply5"]
-  }
-]
-
-Make sure the replies are diverse, witty, and truly connect the tweet content to ${topic1}.`;
+    const prompt = connectCommandPrompt(topic1, tweets);
 
     if (isWindows) {
         // Use Anthropic API for Windows
@@ -750,6 +997,7 @@ async function generateWithClaudeCLI(prompt, topic1, tweetCount) {
 }
 
 async function handleSuggestPost(message) {
+    let processKey = null;
     try {
         const content = message.content.trim();
         
@@ -769,6 +1017,16 @@ async function handleSuggestPost(message) {
             return;
         }
         
+        // Check if suggest post is already running for this exact user in this channel
+        processKey = `${message.channel.id}_${twitterHandle}`;
+        if (runningSuggestPosts.has(processKey)) {
+            await message.reply(`⚠️ A suggest post for @${twitterHandle} is already running in this channel. Please wait for it to complete.`);
+            return;
+        }
+        
+        // Mark this suggest post as running (allow multiple channels simultaneously)
+        runningSuggestPosts.add(processKey);
+        
         await message.reply(`🔄 Analyzing @${twitterHandle}'s tweets and generating suggestions...\nThis may take a moment...`);
         
         // Import and use the suggestPost functionality
@@ -778,6 +1036,8 @@ async function handleSuggestPost(message) {
         
         if (!result.success) {
             await message.channel.send(`❌ **Error:** ${result.message}`);
+            // Clean up tracking
+            runningSuggestPosts.delete(processKey);
             return;
         }
         
@@ -789,6 +1049,8 @@ async function handleSuggestPost(message) {
         if (result.suggestions.length === 0) {
             response += `🤔 **No suggestions found.** The user's interests don't strongly align with the current trending tweets.`;
             await message.channel.send(response);
+            // Clean up tracking
+            runningSuggestPosts.delete(processKey);
             return;
         }
         
@@ -827,9 +1089,16 @@ async function handleSuggestPost(message) {
             }
         }
         
+        // Clean up tracking after successful completion
+        runningSuggestPosts.delete(processKey);
+        
     } catch (error) {
         console.error('Error in suggest post command:', error);
         await message.reply(`❌ Error processing suggest post command: ${error.message}`);
+        // Clean up tracking on error
+        if (processKey) {
+            runningSuggestPosts.delete(processKey);
+        }
     }
 }
 
@@ -837,11 +1106,19 @@ async function handleSuggestPost(message) {
 async function handleHelp(message) {
     const helpText = `🤖 **XBot Commands**
 
-    
+**Topic Management:**
+\`set topic <topic>\` - Set topic for this channel (e.g., \`set topic ethereum\`)
+\`get topic\` - Show current topic for this channel
+
+**Follower Management:**
+\`set follower [count]\` - Set follower threshold for monitoring
+\`set follower\` - Use config default follower count
+\`get follower\` - Show current follower threshold for this channel
+
 **Monitoring:**
-\`start monitoring\` - Start monitoring
-\`stop monitoring\` - Stop the current monitoring process
-\`monitoring status\` or \`status\` - Check monitoring status
+\`start monitoring\` - Start monitoring for this channel's topic
+\`stop monitoring\` - Stop monitoring for this channel's topic
+\`status\` - Check monitoring status for this channel
 \`help monitoring\` - Show this help message
 
 **Topic Association:**
@@ -852,12 +1129,20 @@ async function handleHelp(message) {
 \`suggest post <twitter_handle>\` - Analyze user's tweets and suggest relevant posts from trending tweets
 
 **Examples:**
-• \`start monitoring\`
-• \`stop monitoring\`
-• \`status\`
+• \`set topic ethereum\` - Set channel topic to ethereum
+• \`set follower 5000\` - Set follower threshold to 5000
+• \`set follower\` - Use config default follower count
+• \`get follower\` - Show current follower threshold
+• \`start monitoring\` - Start monitoring for channel's topic
+• \`stop monitoring\` - Stop monitoring for channel's topic
+• \`status\` - Check status for channel's topic
+• \`get topic\` - Show current channel topic
 • \`topic association "inflation" "Relevant Tweets" "1:10"\`
 • \`connect "inflation" "https://twitter.com/user/status/1234567890"\`
-• \`suggest post elonmusk\``;
+• \`suggest post elonmusk\`
+
+**Legacy Support:**
+• \`set ethereum\` - Still works, equivalent to \`set topic ethereum\``;
 
     await message.reply(helpText);
 }
@@ -883,8 +1168,8 @@ process.on('SIGINT', () => {
     console.log('\n🛑 Shutting down Discord bot...');
     
     // Kill all running monitoring processes
-    for (const [name, monitoring] of runningProcesses) {
-        console.log(`Stopping ${name} process...`);
+    for (const [processKey, monitoring] of runningProcesses) {
+        console.log(`Stopping ${processKey} process...`);
         monitoring.process.kill('SIGTERM');
     }
     

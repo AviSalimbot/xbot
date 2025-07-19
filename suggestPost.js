@@ -18,34 +18,176 @@ async function collectUserTweets(twitterHandle) {
   const cleanHandle = twitterHandle.replace(/^@/, '').trim();
   console.log(`🔍 Collecting tweets from @${cleanHandle}...`);
   
+  // Small initial delay to avoid conflicts with other browser operations
+  const initialDelay = Math.random() * 2000; // 0-2 seconds
+  console.log(`⏱️ Waiting ${Math.round(initialDelay/1000)}s before starting...`);
+  await new Promise(resolve => setTimeout(resolve, initialDelay));
+  
+  // Simple browser lock mechanism to reduce conflicts
+  const fs = require('fs');
+  const lockFile = '.suggest_post_browser.lock';
+  const maxLockAge = 120000; // 2 minutes max lock time
+  
+  // Check for existing lock
+  if (fs.existsSync(lockFile)) {
+    try {
+      const lockData = JSON.parse(fs.readFileSync(lockFile, 'utf8'));
+      const lockAge = Date.now() - lockData.timestamp;
+      
+      if (lockAge < maxLockAge) {
+        // Lock is still valid, wait for it to be released
+        console.log(`🔒 Browser is locked by another suggest post operation, waiting...`);
+        let waitTime = 0;
+        while (fs.existsSync(lockFile) && waitTime < 60000) { // Wait max 1 minute
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          waitTime += 2000;
+        }
+      } else {
+        // Lock is stale, remove it
+        console.log(`🧹 Removing stale browser lock`);
+        fs.unlinkSync(lockFile);
+      }
+    } catch (e) {
+      // Corrupted lock file, remove it
+      fs.unlinkSync(lockFile);
+    }
+  }
+  
+  // Create our lock
+  fs.writeFileSync(lockFile, JSON.stringify({
+    timestamp: Date.now(),
+    handle: cleanHandle
+  }));
+  
   let browser = null;
   let page = null;
   
   try {
-    browser = await puppeteer.connect({
-      browserURL: 'http://127.0.0.1:9222'
-    });
+    // Aggressive retry logic to handle browser conflicts with monitoring
+    let retries = 10;
+    let lastError = null;
     
-    page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 720 });
-    
-    // Navigate to user's profile
-    const profileUrl = `https://x.com/${cleanHandle}`;
-    await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    
-    // Wait for tweets to load
-    await page.waitForSelector('article[data-testid="tweet"]', { timeout: 15000 });
-    
-    // Scroll to load more tweets if needed
-    for (let i = 0; i < 3; i++) {
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    while (retries > 0) {
+      try {
+        console.log(`🔗 Attempting browser connection... (${11 - retries}/10)`);
+        browser = await puppeteer.connect({
+          browserURL: 'http://127.0.0.1:9222'
+        });
+        console.log(`✅ Browser connection successful`);
+        break;
+      } catch (connectError) {
+        lastError = connectError;
+        retries--;
+        
+        if (retries === 0) {
+          console.error(`❌ All browser connection attempts failed. Last error:`, connectError.message);
+          throw new Error(`Browser connection failed after 10 attempts: ${connectError.message}`);
+        }
+        
+        // Exponential backoff with jitter to avoid thundering herd
+        const baseDelay = Math.min(1000 * (11 - retries), 8000); // Cap at 8 seconds
+        const jitter = Math.random() * 1000; // Add up to 1 second of randomness
+        const delay = baseDelay + jitter;
+        
+        console.log(`⚠️ Browser connection failed (${connectError.message}), retrying in ${Math.round(delay/1000)}s...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
     
-    // Extract tweets
+    // Create new page with retry logic
+    let pageRetries = 5;
+    while (pageRetries > 0) {
+      try {
+        console.log(`📄 Creating new page... (${6 - pageRetries}/5)`);
+        page = await browser.newPage();
+        await page.setViewport({ width: 1280, height: 720 });
+        console.log(`✅ New page created successfully`);
+        break;
+      } catch (pageError) {
+        pageRetries--;
+        if (pageRetries === 0) {
+          throw new Error(`Page creation failed after 5 attempts: ${pageError.message}`);
+        }
+        console.log(`⚠️ Page creation failed (${pageError.message}), retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+    
+    // Set user agent to avoid rate limiting
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    
+    // Navigate to user's profile with retry logic
+    const profileUrl = `https://x.com/${cleanHandle}`;
+    console.log(`🌐 Navigating to ${profileUrl}...`);
+    
+    let navRetries = 3;
+    while (navRetries > 0) {
+      try {
+        await page.goto(profileUrl, { waitUntil: 'networkidle0', timeout: 60000 });
+        console.log(`✅ Navigation successful`);
+        break;
+      } catch (navError) {
+        navRetries--;
+        if (navRetries === 0) {
+          throw new Error(`Navigation failed after 3 attempts: ${navError.message}`);
+        }
+        console.log(`⚠️ Navigation failed (${navError.message}), retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
+    
+    // Wait for tweets to load with retries
+    let tweetsLoaded = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await page.waitForSelector('article[data-testid="tweet"]', { timeout: 10000 });
+        tweetsLoaded = true;
+        console.log(`✅ Tweets loaded successfully`);
+        break;
+      } catch (e) {
+        console.log(`⚠️ Waiting for tweets... attempt ${attempt + 1}/3`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
+    
+    if (!tweetsLoaded) {
+      throw new Error('Could not load tweets from profile page');
+    }
+    
+    // Improved scrolling to load more tweets
+    console.log(`📜 Scrolling to load more tweets...`);
+    let previousHeight = 0;
+    let currentHeight = await page.evaluate(() => document.body.scrollHeight);
+    
+    for (let i = 0; i < 5; i++) {
+      console.log(`📜 Scroll ${i + 1}/5...`);
+      
+      // Scroll down
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      
+      // Wait for new content to load
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Check if new content loaded
+      previousHeight = currentHeight;
+      currentHeight = await page.evaluate(() => document.body.scrollHeight);
+      
+      if (currentHeight === previousHeight) {
+        console.log(`📜 No new content loaded, stopping scroll`);
+        break;
+      }
+    }
+    
+    // Final wait for all content to settle
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Extract tweets with better error handling
+    console.log(`🔍 Extracting tweets from page...`);
     const tweets = await page.evaluate(() => {
       const articles = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
-      return articles.slice(0, 10).map((article, index) => {
+      console.log(`Found ${articles.length} tweet articles`);
+      
+      return articles.slice(0, 15).map((article, index) => {
         try {
           // Get tweet text
           const textElement = article.querySelector('[data-testid="tweetText"]');
@@ -78,20 +220,50 @@ async function collectUserTweets(twitterHandle) {
     console.error(`❌ Error collecting tweets from @${cleanHandle}:`, error.message);
     return [];
   } finally {
-    try {
-      if (page && !page.isClosed()) {
-        await page.close();
+    // Ensure proper cleanup to avoid browser conflicts
+    if (page) {
+      try {
+        if (!page.isClosed()) {
+          await page.close();
+        }
+      } catch (e) {
+        console.error('Error closing page:', e.message);
+        // Force close if needed
+        try {
+          await page.close();
+        } catch (e2) {
+          // Ignore secondary errors
+        }
       }
-    } catch (e) {
-      console.error('Error closing page:', e.message);
     }
     
+    if (browser) {
+      try {
+        if (browser.connected) {
+          await browser.disconnect();
+        }
+      } catch (e) {
+        console.error('Error disconnecting browser:', e.message);
+        // Force disconnect if needed
+        try {
+          await browser.disconnect();
+        } catch (e2) {
+          // Ignore secondary errors
+        }
+      }
+    }
+    
+    // Small delay to ensure cleanup completes
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Release browser lock
     try {
-      if (browser && browser.connected) {
-        await browser.disconnect();
+      if (fs.existsSync(lockFile)) {
+        fs.unlinkSync(lockFile);
+        console.log(`🔓 Browser lock released`);
       }
     } catch (e) {
-      console.error('Error disconnecting browser:', e.message);
+      console.error('Error releasing browser lock:', e.message);
     }
   }
 }

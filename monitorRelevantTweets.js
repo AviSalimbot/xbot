@@ -5,8 +5,22 @@ const { analyzeTweet } = require('./claude');
 const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
-const LAST_ROW_FILE = '.last_row.txt';
-const LOCK_FILE = '.monitor.lock';
+// Topic-specific file naming
+function getTopicFiles(topic) {
+  return {
+    LAST_ROW_FILE: `.${topic}_last_row.txt`,
+    LOCK_FILE: `.${topic}_monitor.lock`,
+    PID_FILE: `.${topic}_monitor.pid`,
+    LOG_FILE: `${topic}_monitor.log`,
+    LAST_SHEET_ID_FILE: `.${topic}_last_sheet_id.txt`
+  };
+}
+
+// Get topic from environment
+const TOPIC = process.env.TOPIC || 'ethereum';
+const FILES = getTopicFiles(TOPIC);
+const LAST_ROW_FILE = FILES.LAST_ROW_FILE;
+const LOCK_FILE = FILES.LOCK_FILE;
 let isProcessing = false;
 let cronTask = null;
 
@@ -189,8 +203,8 @@ async function processNewRows() {
   
     const spreadsheetId = latestFile.id;
   
-    // Reset .last_row.txt if a new sheet is detected, and create/update .last_sheet_id.txt
-    const LAST_SHEET_ID_FILE = '.last_sheet_id.txt';
+    // Reset topic-specific last_row file if a new sheet is detected
+    const LAST_SHEET_ID_FILE = FILES.LAST_SHEET_ID_FILE;
     let lastSheetId = '';
     if (fs.existsSync(LAST_SHEET_ID_FILE)) {
       lastSheetId = fs.readFileSync(LAST_SHEET_ID_FILE, 'utf8');
@@ -253,16 +267,31 @@ async function processNewRows() {
         return 0;
       });
       console.log(`Follower count for ${handle}: ${followerCount}`);
-      if (followerCount <= config.followersThreshold) {
-        console.log(`Tweet ${i + 1} FAIL (Follower count too low: ${followerCount} <= ${config.followersThreshold})`);
+      
+      // Use follower override if provided, otherwise use config default
+      const effectiveFollowerThreshold = process.env.FOLLOWER_OVERRIDE 
+        ? parseInt(process.env.FOLLOWER_OVERRIDE, 10) 
+        : config.followersThreshold;
+      
+      if (followerCount <= effectiveFollowerThreshold) {
+        const thresholdSource = process.env.FOLLOWER_OVERRIDE ? 'override' : 'config';
+        console.log(`Tweet ${i + 1} FAIL (Follower count too low: ${followerCount} <= ${effectiveFollowerThreshold} [${thresholdSource}])`);
         // Update last processed row after processing (fail)
         fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
         continue;
       }
 
-      const result = await analyzeTweet(tweetText);
+      console.log(`Running AI analysis for tweet ${i + 1}...`);
+      const result = await Promise.race([
+        analyzeTweet(tweetText),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('AI analysis timeout')), 60000))
+      ]).catch(e => {
+        console.log(`AI analysis failed for tweet ${i + 1}: ${e.message}`);
+        return 'FAIL';
+      });
+      console.log(`AI analysis result for tweet ${i + 1}: ${result}`);
       if (result !== 'PASS') {
-        console.log(`Tweet ${i + 1} FAIL`);
+        console.log(`Tweet ${i + 1} FAIL (AI analysis: ${result})`);
         // Update last processed row after processing (fail)
         fs.writeFileSync(LAST_ROW_FILE, (i + 1).toString());
         continue;

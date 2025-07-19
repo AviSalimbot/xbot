@@ -27,21 +27,6 @@
     },
     "followSheet": "Basketball Follow Report",
     "targetSheet": "Relevant Tweets",
-    "folder": "Basketball Google Drive Folder ID"
-  },
-  "crypto": {
-    "name": "Crypto",
-    "searchQuery": "crypto -scam -giveaway -airdrop -bot -pump -dump",
-    "userSearchQuery": "crypto",
-    "sheetPrefix": "Crypto Tweets",
-    "followersThreshold": 1500,
-    "followAccountsThreshold": 4000,
-    "statusMessages": {
-      "following": "Following Crypto accounts, please wait...",
-      "monitoring": "📊 Monitors latest 'Crypto Tweets' spreadsheet for new rows"
-    },
-    "followSheet": "Crypto Follow Report",
-    "targetSheet": "Relevant Tweets",
-    "folder": "Crypto Google Drive Folder ID"
+    "folder": "1E62qt4Jaz-2qsEjkFvZJ8vSfzH9qNMQo"
   }
 } 

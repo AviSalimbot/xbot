@@ -11,23 +11,35 @@ const START_SCRIPT = IS_WINDOWS
     ? path.join(SCRIPT_DIR, 'start-monitoring.ps1')
     : path.join(SCRIPT_DIR, 'start-monitoring.sh');
 
-const PID_FILE = path.join(SCRIPT_DIR, '.monitor.pid');
-const LOCK_FILE = path.join(SCRIPT_DIR, '.monitor.lock');
+// Topic-specific file naming
+function getTopicFiles(topic) {
+  return {
+    PID_FILE: path.join(SCRIPT_DIR, `.${topic}_monitor.pid`),
+    LOCK_FILE: path.join(SCRIPT_DIR, `.${topic}_monitor.lock`),
+    LOG_FILE: path.join(SCRIPT_DIR, `${topic}_monitor.log`)
+  };
+}
+
+// Get topic from environment or default
+const TOPIC = process.env.TOPIC || 'ethereum';
+const FILES = getTopicFiles(TOPIC);
+const PID_FILE = FILES.PID_FILE;
+const LOCK_FILE = FILES.LOCK_FILE;
 
 // Log which script will be used
 console.log(`🔧 Platform detected: ${os.platform()}`);
 console.log(`📜 Using monitoring script: ${START_SCRIPT}`);
 
-function executeScript(command) {
+function executeScript(command, topic = TOPIC) {
     return new Promise((resolve, reject) => {
-        // Use the appropriate command based on OS
+        // Use the appropriate command based on OS with topic parameter
         const execCommand = IS_WINDOWS 
-            ? `powershell -ExecutionPolicy Bypass -File "${START_SCRIPT}" ${command}`
-            : `"${START_SCRIPT}" ${command}`;
+            ? `powershell -ExecutionPolicy Bypass -File "${START_SCRIPT}" ${command} ${topic}`
+            : `"${START_SCRIPT}" ${command} ${topic}`;
             
         console.log(`🚀 Executing: ${execCommand}`);
             
-        exec(execCommand, (error, stdout, stderr) => {
+        exec(execCommand, { env: { ...process.env, TOPIC: topic } }, (error, stdout, stderr) => {
             if (error) {
                 console.error(`❌ Script execution failed:`, error);
                 reject({ success: false, message: `Error: ${error.message}`, output: stderr });
@@ -59,25 +71,22 @@ async function stopMonitoring() {
 
 async function getMonitoringStatus() {
     try {
-        const result = await executeScript('status');
-        // Parse the output to determine if monitoring is running
-        let isMonitoring = false;
-        if (result && result.message) {
-            // Check for the phrase 'Monitoring is running' in the output
-            if (result.message.includes('Monitoring is running')) {
-                isMonitoring = true;
-            }
-        }
+        // Use the sync function instead of calling external script for status
+        const isMonitoring = getMonitoringStatusSync();
+        const message = isMonitoring 
+            ? 'Monitoring is running' 
+            : 'Monitoring is not running';
+            
         return {
             success: true,
             isMonitoring,
-            message: result.message
+            message
         };
     } catch (error) {
         return {
             success: true,
             isMonitoring: false,
-            message: error.message || 'Monitoring is not running'
+            message: 'Monitoring is not running'
         };
     }
 }
