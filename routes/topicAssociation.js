@@ -216,7 +216,7 @@ async function generateConnectionsWithAPI(prompt, topic1, tweets, logEntry) {
     
     const message = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 4000,
+      max_tokens: 8000,
       messages: [
         {
           role: 'user',
@@ -230,24 +230,68 @@ async function generateConnectionsWithAPI(prompt, topic1, tweets, logEntry) {
     console.log(`✅ Claude API completed successfully`);
     console.log(`📄 Raw output length: ${content.length} characters`);
     
-    // Extract JSON from the response
+    // Extract JSON from the response with better error handling
     let jsonContent = content;
-    const codeBlockMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
-    if (codeBlockMatch) {
-      jsonContent = codeBlockMatch[1];
-    } else {
-      const jsonMatch = content.match(/(\{[\s\S]*\})/);
-      if (jsonMatch) {
-        jsonContent = jsonMatch[1];
+    let result;
+    
+    try {
+      // First try to find JSON in code blocks
+      const codeBlockMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+      if (codeBlockMatch) {
+        jsonContent = codeBlockMatch[1];
       } else {
+        // Try to find JSON array
         const arrayMatch = content.match(/(\[[\s\S]*\])/);
         if (arrayMatch) {
           jsonContent = arrayMatch[1];
+        } else {
+          // Try to find JSON object
+          const jsonMatch = content.match(/(\{[\s\S]*\})/);
+          if (jsonMatch) {
+            jsonContent = jsonMatch[1];
+          }
         }
       }
+      
+      // Try to parse the extracted JSON
+      result = JSON.parse(jsonContent);
+      
+    } catch (parseError) {
+      console.warn(`❌ Initial JSON parsing failed: ${parseError.message}`);
+      
+      // If parsing fails, try to fix common truncation issues
+      try {
+        // Look for incomplete JSON and try to complete it
+        const incompleteArrayMatch = content.match(/(\[[\s\S]*?)(?:\s*$|\s*\n)/);
+        if (incompleteArrayMatch) {
+          let incompleteJson = incompleteArrayMatch[1];
+          
+          // Count opening and closing brackets/braces
+          const openBrackets = (incompleteJson.match(/\[/g) || []).length;
+          const closeBrackets = (incompleteJson.match(/\]/g) || []).length;
+          const openBraces = (incompleteJson.match(/\{/g) || []).length;
+          const closeBraces = (incompleteJson.match(/\}/g) || []).length;
+          
+          // Add missing closing brackets/braces
+          while (closeBrackets < openBrackets) {
+            incompleteJson += ']';
+          }
+          while (closeBraces < openBraces) {
+            incompleteJson += '}';
+          }
+          
+          console.log(`🔧 Attempting to fix truncated JSON: ${incompleteJson.substring(0, 100)}...`);
+          result = JSON.parse(incompleteJson);
+          
+        } else {
+          throw new Error('Could not extract or fix JSON content');
+        }
+      } catch (fixError) {
+        console.warn(`❌ JSON fix attempt failed: ${fixError.message}`);
+        console.warn(`Raw content preview: ${content.substring(0, 500)}...`);
+        throw parseError; // Re-throw original error
+      }
     }
-    
-    const result = JSON.parse(jsonContent);
     
     // Enhance Claude results with original tweet metadata
     const enhancedResult = result.map((suggestion, index) => {

@@ -774,29 +774,63 @@ async function handleConnect(message) {
         });
         
         const rows = sheetResponse.data.values || [];
+        console.log(`📊 Found ${rows.length} rows in "Relevant Tweets" sheet`);
+        console.log(`🔍 Searching for tweet URL: ${tweetLink}`);
         
-        // Find the tweet by URL (column D)
+        // Find the tweet by URL (column D) with improved search logic
         let foundTweet = null;
         let foundRowIndex = -1;
         
+        // Normalize the search URL
+        const normalizedSearchUrl = tweetLink.trim().toLowerCase();
+        
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            if (row && row[3] && row[3].includes(tweetLink)) {
-                foundTweet = {
-                    text: row[2] || '',
-                    handle: row[1] || '@unknown',
-                    url: row[3] || 'N/A',
-                    date: row[0] || 'N/A',
-                    followerCount: row[4] || 'N/A',
-                    rowNumber: i + 1
-                };
-                foundRowIndex = i;
-                break;
+            if (row && row[3]) {
+                const sheetUrl = row[3].trim().toLowerCase();
+                
+                // Try multiple matching strategies
+                const exactMatch = sheetUrl === normalizedSearchUrl;
+                const includesMatch = sheetUrl.includes(normalizedSearchUrl) || normalizedSearchUrl.includes(sheetUrl);
+                const statusIdMatch = extractStatusId(sheetUrl) === extractStatusId(normalizedSearchUrl);
+                
+                if (exactMatch || includesMatch || statusIdMatch) {
+                    console.log(`✅ Found match at row ${i + 1}:`);
+                    console.log(`   Sheet URL: ${row[3]}`);
+                    console.log(`   Search URL: ${tweetLink}`);
+                    console.log(`   Match type: ${exactMatch ? 'exact' : includesMatch ? 'includes' : 'status_id'}`);
+                    
+                    foundTweet = {
+                        text: row[2] || '',
+                        handle: row[1] || '@unknown',
+                        url: row[3] || 'N/A',
+                        date: row[0] || 'N/A',
+                        followerCount: row[4] || 'N/A',
+                        rowNumber: i + 1
+                    };
+                    foundRowIndex = i;
+                    break;
+                }
             }
         }
         
+        // Helper function to extract status ID from Twitter URL
+        function extractStatusId(url) {
+            const match = url.match(/status\/(\d+)/);
+            return match ? match[1] : null;
+        }
+        
         if (!foundTweet) {
-            await message.reply(`❌ Tweet not found in "Relevant Tweets" sheet. Make sure the tweet URL is correct and exists in the sheet.`);
+            // Show some sample URLs from the sheet for debugging
+            console.log(`❌ Tweet not found. Sample URLs from sheet:`);
+            for (let i = 0; i < Math.min(5, rows.length); i++) {
+                const row = rows[i];
+                if (row && row[3]) {
+                    console.log(`   Row ${i + 1}: ${row[3]}`);
+                }
+            }
+            
+            await message.reply(`❌ Tweet not found in "Relevant Tweets" sheet. Make sure the tweet URL is correct and exists in the sheet.\n\nSearched for: ${tweetLink}\n\nCheck the console for sample URLs from the sheet.`);
             return;
         }
         
@@ -880,7 +914,7 @@ async function generateWithAnthropicAPI(prompt, topic1, tweetCount) {
         
         const message = await anthropic.messages.create({
             model: 'claude-3-5-sonnet-20241022',
-            max_tokens: 4000,
+            max_tokens: 8000,
             messages: [
                 {
                     role: 'user',
@@ -894,22 +928,68 @@ async function generateWithAnthropicAPI(prompt, topic1, tweetCount) {
         console.log(`✅ Claude API completed successfully`);
         console.log(`📄 Raw output length: ${content.length} characters`);
         
-        // Extract JSON from the response (handle markdown code blocks)
+        // Extract JSON from the response with better error handling
         let jsonContent = content;
+        let result;
         
-        // Remove markdown code blocks if present
-        const codeBlockMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
-        if (codeBlockMatch) {
-            jsonContent = codeBlockMatch[1];
-        } else {
-            // Try to extract JSON array from the content
-            const jsonMatch = content.match(/(\[[\s\S]*\])/);
-            if (jsonMatch) {
-                jsonContent = jsonMatch[1];
+        try {
+            // First try to find JSON in code blocks
+            const codeBlockMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+            if (codeBlockMatch) {
+                jsonContent = codeBlockMatch[1];
+            } else {
+                // Try to find JSON array
+                const arrayMatch = content.match(/(\[[\s\S]*\])/);
+                if (arrayMatch) {
+                    jsonContent = arrayMatch[1];
+                } else {
+                    // Try to find JSON object
+                    const jsonMatch = content.match(/(\{[\s\S]*\})/);
+                    if (jsonMatch) {
+                        jsonContent = jsonMatch[1];
+                    }
+                }
+            }
+            
+            // Try to parse the extracted JSON
+            result = JSON.parse(jsonContent);
+            
+        } catch (parseError) {
+            console.warn(`❌ Initial JSON parsing failed: ${parseError.message}`);
+            
+            // If parsing fails, try to fix common truncation issues
+            try {
+                // Look for incomplete JSON and try to complete it
+                const incompleteArrayMatch = content.match(/(\[[\s\S]*?)(?:\s*$|\s*\n)/);
+                if (incompleteArrayMatch) {
+                    let incompleteJson = incompleteArrayMatch[1];
+                    
+                    // Count opening and closing brackets/braces
+                    const openBrackets = (incompleteJson.match(/\[/g) || []).length;
+                    const closeBrackets = (incompleteJson.match(/\]/g) || []).length;
+                    const openBraces = (incompleteJson.match(/\{/g) || []).length;
+                    const closeBraces = (incompleteJson.match(/\}/g) || []).length;
+                    
+                    // Add missing closing brackets/braces
+                    while (closeBrackets < openBrackets) {
+                        incompleteJson += ']';
+                    }
+                    while (closeBraces < openBraces) {
+                        incompleteJson += '}';
+                    }
+                    
+                    console.log(`🔧 Attempting to fix truncated JSON: ${incompleteJson.substring(0, 100)}...`);
+                    result = JSON.parse(incompleteJson);
+                    
+                } else {
+                    throw new Error('Could not extract or fix JSON content');
+                }
+            } catch (fixError) {
+                console.warn(`❌ JSON fix attempt failed: ${fixError.message}`);
+                console.warn(`Raw content preview: ${content.substring(0, 500)}...`);
+                throw parseError; // Re-throw original error
             }
         }
-        
-        const result = JSON.parse(jsonContent);
         
         console.log(`🎯 Successfully generated ${result.length} sets of replies`);
         return result;
