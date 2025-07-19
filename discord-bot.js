@@ -578,38 +578,63 @@ async function handleTopicAssociation(message) {
         const parts = content.split(' ');
         
         if (parts.length < 4) {
-            await message.reply(`❌ Usage: \`topic association "topic" "sheetName" "range"\`\n\nExample: \`topic association "inflation" "Relevant Tweets" "1:10"\``);
+            await message.reply(`❌ Usage: \`topic association "keyword" "sheetName" "range"\`\n\nExample: \`topic association "inflation" "Relevant Tweets" "1:10"\`\n\n⚠️ **Note:** This uses the channel's topic folder to find the sheet.`);
             return;
         }
 
-        // Parse command: topic association "topic" "sheetName" "range"
+        // Parse command: topic association "keyword" "sheetName" "range"
         const commandText = content.substring('topic association'.length).trim();
         const matches = commandText.match(/^"([^"]*)"(?:\s+"([^"]*)")?(?:\s+"([^"]*)")?$/);
         
         if (!matches) {
-            await message.reply(`❌ Invalid format. Use: \`topic association "topic" "sheetName" "range"\`\n\nExample: \`topic association "inflation" "Relevant Tweets" "1:10"\``);
+            await message.reply(`❌ Invalid format. Use: \`topic association "keyword" "sheetName" "range"\`\n\nExample: \`topic association "inflation" "Relevant Tweets" "1:10"\``);
             return;
         }
 
-        const topic = matches[1];
+        const keyword = matches[1]; // This is for analysis, not folder searching
         const sheetName = matches[2];
         const sheetRange = matches[3] || '';
 
-        if (!topic || !sheetName) {
-            await message.reply(`❌ Topic and Sheet Name are required.\n\nExample: \`topic association "inflation" "Relevant Tweets" "1:10"\``);
+        if (!keyword || !sheetName) {
+            await message.reply(`❌ Keyword and Sheet Name are required.\n\nExample: \`topic association "inflation" "Relevant Tweets" "1:10"\``);
             return;
         }
 
-        await message.reply(`🔄 Processing topic association for "${topic}"...\nSheet: ${sheetName}\nRange: ${sheetRange || 'all'}`);
+        // Get the channel's topic (this determines which folder to search)
+        const channelId = message.channel.id;
+        const channelTopic = channelTopics.get(channelId);
+        
+        if (!channelTopic) {
+            await message.reply(`❌ No topic set for this channel. Use \`set topic <topic>\` first to specify which folder to search.\n\nExample: \`set topic ethereum\``);
+            return;
+        }
+
+        // Validate channel topic exists in config
+        const fs = require('fs');
+        const path = require('path');
+        const configPath = path.join(process.cwd(), 'config.json');
+        
+        if (!fs.existsSync(configPath)) {
+            await message.reply(`❌ Config file not found.`);
+            return;
+        }
+        
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        if (!config[channelTopic]) {
+            const availableTopics = Object.keys(config).join(', ');
+            await message.reply(`❌ Channel topic '${channelTopic}' not found in config. Available topics: ${availableTopics}`);
+            return;
+        }
+
+        await message.reply(`🔄 Processing topic association for "${keyword}"...\nChannel Topic: ${channelTopic}\nSheet: ${sheetName}\nRange: ${sheetRange || 'all'}`);
 
         // Import and use the topic association route
         const topicAssociationRoute = require('./routes/topicAssociation');
         
-        // Implement sheet name lookup without requiring TOPIC env var
+        // Implement topic-aware sheet lookup in channel's topic folder
         let sheetId = null;
         
         try {
-            // Create a modified version of getAvailableSheets that searches all folders
             const { google } = require('googleapis');
             
             // Get Google Drive client
@@ -624,8 +649,24 @@ async function handleTopicAssociation(message) {
             const client = await auth.getClient();
             const drive = google.drive({ version: 'v3', auth: client });
             
-            // Search for spreadsheet by name across all accessible folders
-            const sheetsQuery = `name='${sheetName}' and mimeType='application/vnd.google-apps.spreadsheet'`;
+            // First find the channel's topic folder
+            const topicFolderQuery = `name='${channelTopic}' and mimeType='application/vnd.google-apps.folder'`;
+            const folderResponse = await drive.files.list({
+                q: topicFolderQuery,
+                fields: 'files(id, name)',
+                orderBy: 'name'
+            });
+            
+            if (!folderResponse.data.files || folderResponse.data.files.length === 0) {
+                await message.reply(`❌ Topic folder "${channelTopic}" not found. Make sure the folder exists and the service account has access to it.`);
+                return;
+            }
+            
+            const topicFolderId = folderResponse.data.files[0].id;
+            console.log(`✅ Found topic folder "${channelTopic}" with ID: ${topicFolderId}`);
+            
+            // Search for sheet within the channel's topic folder
+            const sheetsQuery = `name='${sheetName}' and parents in '${topicFolderId}' and mimeType='application/vnd.google-apps.spreadsheet'`;
             const sheetsResponse = await drive.files.list({
                 q: sheetsQuery,
                 fields: 'files(id, name)',
@@ -634,9 +675,9 @@ async function handleTopicAssociation(message) {
             
             if (sheetsResponse.data.files && sheetsResponse.data.files.length > 0) {
                 sheetId = sheetsResponse.data.files[0].id;
-                console.log(`✅ Found sheet "${sheetName}" with ID: ${sheetId}`);
+                console.log(`✅ Found sheet "${sheetName}" in "${channelTopic}" folder with ID: ${sheetId}`);
             } else {
-                await message.reply(`❌ Sheet "${sheetName}" not found. Make sure the sheet name is exact and the service account has access to it.`);
+                await message.reply(`❌ Sheet "${sheetName}" not found in "${channelTopic}" folder. Make sure the sheet exists in the correct folder and the service account has access to it.`);
                 return;
             }
             
@@ -649,7 +690,7 @@ async function handleTopicAssociation(message) {
         // Create mock request/response objects
         const mockReq = {
             body: {
-                topic1: topic,
+                topic1: keyword,
                 sheetId: sheetId,
                 sheetRange: sheetRange
             }
@@ -660,7 +701,8 @@ async function handleTopicAssociation(message) {
                 if (data.success) {
                     // Format the response for Discord
                     let response = `✅ **Topic Association Results**\n\n`;
-                    response += `**Topic:** ${topic}\n`;
+                    response += `**Keyword:** ${keyword}\n`;
+                    response += `**Channel Topic:** ${channelTopic}\n`;
                     response += `**Generated:** ${data.suggestions.length} connections\n\n`;
                     
                     // Send results in chunks to avoid Discord message limits
@@ -722,17 +764,43 @@ async function handleConnect(message) {
     try {
         const content = message.content.trim();
         
-        // Parse command: connect "topic" "tweetLink"
+        // Parse command: connect "keyword" "tweetLink"
         const commandText = content.substring('connect'.length).trim();
         const matches = commandText.match(/^"([^"]*)"(?:\s+"([^"]*)")?$/);
         
         if (!matches || !matches[1] || !matches[2]) {
-            await message.reply(`❌ Usage: \`connect "topic" "tweetLink"\`\n\nExample: \`connect "inflation" "https://twitter.com/user/status/1234567890"\``);
+            await message.reply(`❌ Usage: \`connect "keyword" "tweetLink"\`\n\nExample: \`connect "inflation" "https://twitter.com/user/status/1234567890"\`\n\n⚠️ **Note:** This uses the channel's topic folder to search for the tweet.`);
             return;
         }
 
-        const topic = matches[1];
+        const keyword = matches[1]; // This is just for connection analysis, not folder searching
         const tweetLink = matches[2];
+
+        // Get the channel's topic (this determines which folder to search)
+        const channelId = message.channel.id;
+        const channelTopic = channelTopics.get(channelId);
+        
+        if (!channelTopic) {
+            await message.reply(`❌ No topic set for this channel. Use \`set topic <topic>\` first to specify which folder to search.\n\nExample: \`set topic ethereum\``);
+            return;
+        }
+
+        // Validate channel topic exists in config
+        const fs = require('fs');
+        const path = require('path');
+        const configPath = path.join(process.cwd(), 'config.json');
+        
+        if (!fs.existsSync(configPath)) {
+            await message.reply(`❌ Config file not found.`);
+            return;
+        }
+        
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        if (!config[channelTopic]) {
+            const availableTopics = Object.keys(config).join(', ');
+            await message.reply(`❌ Channel topic '${channelTopic}' not found in config. Available topics: ${availableTopics}`);
+            return;
+        }
 
 
         // Import required modules
@@ -751,8 +819,25 @@ async function handleConnect(message) {
         const drive = google.drive({ version: 'v3', auth: client });
         const sheets = google.sheets({ version: 'v4', auth: client });
         
-        // Search for "Relevant Tweets" sheet
-        const sheetsQuery = `name='Relevant Tweets' and mimeType='application/vnd.google-apps.spreadsheet'`;
+        // Search for "Relevant Tweets" sheet in the channel's topic folder
+        // First find the channel's topic folder
+        const topicFolderQuery = `name='${channelTopic}' and mimeType='application/vnd.google-apps.folder'`;
+        const folderResponse = await drive.files.list({
+            q: topicFolderQuery,
+            fields: 'files(id, name)',
+            orderBy: 'name'
+        });
+        
+        if (!folderResponse.data.files || folderResponse.data.files.length === 0) {
+            await message.reply(`❌ Topic folder "${channelTopic}" not found. Make sure the folder exists and the service account has access to it.`);
+            return;
+        }
+        
+        const topicFolderId = folderResponse.data.files[0].id;
+        console.log(`✅ Found topic folder "${channelTopic}" with ID: ${topicFolderId}`);
+        
+        // Now search for "Relevant Tweets" sheet within the channel's topic folder
+        const sheetsQuery = `name='Relevant Tweets' and parents in '${topicFolderId}' and mimeType='application/vnd.google-apps.spreadsheet'`;
         const sheetsResponse = await drive.files.list({
             q: sheetsQuery,
             fields: 'files(id, name)',
@@ -760,17 +845,18 @@ async function handleConnect(message) {
         });
         
         if (!sheetsResponse.data.files || sheetsResponse.data.files.length === 0) {
-            await message.reply(`❌ "Relevant Tweets" sheet not found. Make sure the sheet name is exact and the service account has access to it.`);
+            await message.reply(`❌ "Relevant Tweets" sheet not found in "${channelTopic}" folder. Make sure the sheet exists in the correct folder and the service account has access to it.`);
             return;
         }
         
         const sheetId = sheetsResponse.data.files[0].id;
-        console.log(`✅ Found "Relevant Tweets" sheet with ID: ${sheetId}`);
+        console.log(`✅ Found "Relevant Tweets" sheet in "${channelTopic}" folder with ID: ${sheetId}`);
 
-        // Get all data from the sheet to search for the tweet URL
+        // Get all data from the sheet to search for the tweet URL (specify large range to get all rows)
         const sheetResponse = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
-            range: 'A:E'
+            range: 'A1:E10000',
+            majorDimension: 'ROWS'
         });
         
         const rows = sheetResponse.data.values || [];
@@ -781,18 +867,23 @@ async function handleConnect(message) {
         let foundTweet = null;
         let foundRowIndex = -1;
         
-        // Normalize the search URL
-        const normalizedSearchUrl = tweetLink.trim().toLowerCase();
+        // Normalize the search URL with enhanced normalization
+        const normalizedSearchUrl = normalizeTwitterUrl(tweetLink);
+        
+        console.log(`🔍 Searching for normalized URL: ${normalizedSearchUrl}`);
+        console.log(`🔍 Original URL: ${tweetLink}`);
         
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
             if (row && row[3]) {
-                const sheetUrl = row[3].trim().toLowerCase();
+                const originalSheetUrl = row[3];
+                const normalizedSheetUrl = normalizeTwitterUrl(originalSheetUrl);
                 
-                // Try multiple matching strategies
-                const exactMatch = sheetUrl === normalizedSearchUrl;
-                const includesMatch = sheetUrl.includes(normalizedSearchUrl) || normalizedSearchUrl.includes(sheetUrl);
-                const statusIdMatch = extractStatusId(sheetUrl) === extractStatusId(normalizedSearchUrl);
+                // Try multiple matching strategies with better URL normalization
+                const exactMatch = normalizedSheetUrl === normalizedSearchUrl;
+                const includesMatch = normalizedSheetUrl.includes(normalizedSearchUrl) || normalizedSearchUrl.includes(normalizedSheetUrl);
+                const statusIdMatch = extractStatusId(originalSheetUrl) === extractStatusId(tweetLink);
+                
                 
                 if (exactMatch || includesMatch || statusIdMatch) {
                     console.log(`✅ Found match at row ${i + 1}:`);
@@ -820,17 +911,38 @@ async function handleConnect(message) {
             return match ? match[1] : null;
         }
         
+        // Helper function to normalize Twitter URLs for better matching
+        function normalizeTwitterUrl(url) {
+            if (!url) return '';
+            
+            let normalized = url.trim().toLowerCase();
+            
+            // Convert x.com to twitter.com for consistency
+            normalized = normalized.replace(/x\.com/g, 'twitter.com');
+            
+            // Remove trailing slashes and query parameters
+            normalized = normalized.replace(/[?#].*$/, '').replace(/\/$/, '');
+            
+            // Remove www. prefix if present
+            normalized = normalized.replace(/www\./g, '');
+            
+            return normalized;
+        }
+        
         if (!foundTweet) {
             // Show some sample URLs from the sheet for debugging
             console.log(`❌ Tweet not found. Sample URLs from sheet:`);
-            for (let i = 0; i < Math.min(5, rows.length); i++) {
+            console.log(`❌ Searched for: ${normalizedSearchUrl} (normalized from: ${tweetLink})`);
+            for (let i = 0; i < Math.min(10, rows.length); i++) {
                 const row = rows[i];
                 if (row && row[3]) {
-                    console.log(`   Row ${i + 1}: ${row[3]}`);
+                    const normalized = normalizeTwitterUrl(row[3]);
+                    console.log(`   Row ${i + 1}: "${row[3]}" -> "${normalized}"`);
+                    console.log(`   Status ID: ${extractStatusId(row[3])}`);
                 }
             }
             
-            await message.reply(`❌ Tweet not found in "Relevant Tweets" sheet. Make sure the tweet URL is correct and exists in the sheet.\n\nSearched for: ${tweetLink}\n\nCheck the console for sample URLs from the sheet.`);
+            await message.reply(`❌ Tweet not found in "Relevant Tweets" sheet. Make sure the tweet URL is correct and exists in the sheet.\n\nSearched for: ${tweetLink}\nNormalized to: ${normalizedSearchUrl}\n\nCheck the console for detailed debug information.`);
             return;
         }
         
@@ -840,9 +952,9 @@ async function handleConnect(message) {
         
         console.log(`✅ Found tweet at row ${foundTweet.rowNumber}: "${foundTweet.text.substring(0, 50)}..."`);
         
-        // Generate connections and replies using the same logic as topic association
+        // Generate connections and replies using the keyword and channel topic
         const topicAssociationRoute = require('./routes/topicAssociation');
-        const suggestions = await generateConnectionsAndRepliesForConnect(topic, [foundTweet]);
+        const suggestions = await generateConnectionsAndRepliesForConnect(keyword, [foundTweet]);
         
         if (suggestions === null) {
             await message.reply(`❌ No connections could be drawn. Claude CLI failed or is not available.`);
@@ -850,14 +962,15 @@ async function handleConnect(message) {
         }
         
         if (suggestions.length === 0 || !suggestions[0].replies || suggestions[0].replies.length === 0) {
-            await message.reply(`❌ No meaningful connections found between the tweet and "${topic}".`);
+            await message.reply(`❌ No meaningful connections found between the tweet and "${keyword}".`);
             return;
         }
         
         // Format and send the response
         const suggestion = suggestions[0];
         let response = `✅ Connection Found!\n\n`;
-        response += `**Topic:** ${topic}\n`;
+        response += `**Keyword:** ${keyword}\n`;
+        response += `**Channel Topic:** ${channelTopic}\n`;
         response += `**Tweet:** ${foundTweet.url}\n`;
         response += `**Connection:** ${suggestion.connection}\n\n`;
         response += `**Reply Suggestions:**\n`;
@@ -1085,7 +1198,16 @@ async function handleSuggestPost(message) {
         const commandText = content.substring('suggest post'.length).trim();
         
         if (!commandText) {
-            await message.reply(`❌ Usage: \`suggest post <twitter_handle>\`\n\nExample: \`suggest post elonmusk\``);
+            await message.reply(`❌ Usage: \`suggest post <twitter_handle>\`\n\nExample: \`suggest post elonmusk\`\n\n⚠️ **Note:** Make sure to set a topic for this channel first using \`set topic <topic>\``);
+            return;
+        }
+        
+        // Get the topic for this channel (required for topic-aware suggestions)
+        const channelId = message.channel.id;
+        const topic = channelTopics.get(channelId);
+        
+        if (!topic) {
+            await message.reply(`❌ No topic set for this channel. Use \`set topic <topic>\` first to get topic-specific suggestions.\n\nExample: \`set topic ethereum\``);
             return;
         }
         
@@ -1097,22 +1219,22 @@ async function handleSuggestPost(message) {
             return;
         }
         
-        // Check if suggest post is already running for this exact user in this channel
-        processKey = `${message.channel.id}_${twitterHandle}`;
+        // Check if suggest post is already running for this exact user+topic in this channel
+        processKey = `${message.channel.id}_${topic}_${twitterHandle}`;
         if (runningSuggestPosts.has(processKey)) {
-            await message.reply(`⚠️ A suggest post for @${twitterHandle} is already running in this channel. Please wait for it to complete.`);
+            await message.reply(`⚠️ A suggest post for @${twitterHandle} with topic "${topic}" is already running in this channel. Please wait for it to complete.`);
             return;
         }
         
         // Mark this suggest post as running (allow multiple channels simultaneously)
         runningSuggestPosts.add(processKey);
         
-        await message.reply(`🔄 Analyzing @${twitterHandle}'s tweets and generating suggestions...\nThis may take a moment...`);
+        await message.reply(`🔄 Analyzing @${twitterHandle}'s tweets and generating topic-specific suggestions for "${topic}"...\nThis may take a moment...`);
         
         // Import and use the suggestPost functionality
         const { suggestPost } = require('./suggestPost');
         
-        const result = await suggestPost(twitterHandle);
+        const result = await suggestPost(twitterHandle, topic);
         
         if (!result.success) {
             await message.channel.send(`❌ **Error:** ${result.message}`);
@@ -1202,11 +1324,11 @@ async function handleHelp(message) {
 \`help monitoring\` - Show this help message
 
 **Topic Association:**
-\`topic association "topic" "sheetName" "range"\` - Generate topic connections and replies
-\`connect "topic" "tweetLink"\` - Find tweet by URL in Relevant Tweets and generate connections
+\`topic association "keyword" "sheetName" "range"\` - Generate keyword connections and replies from channel's topic folder
+\`connect "keyword" "tweetLink"\` - Find tweet by URL in channel's topic folder and generate connections
 
 **Post Suggestions:**
-\`suggest post <twitter_handle>\` - Analyze user's tweets and suggest relevant posts from trending tweets
+\`suggest post <twitter_handle>\` - Analyze user's tweets and suggest relevant posts from topic-specific trending tweets (requires channel topic)
 
 **Examples:**
 • \`set topic ethereum\` - Set channel topic to ethereum
@@ -1217,9 +1339,9 @@ async function handleHelp(message) {
 • \`stop monitoring\` - Stop monitoring for channel's topic
 • \`status\` - Check status for channel's topic
 • \`get topic\` - Show current channel topic
-• \`topic association "inflation" "Relevant Tweets" "1:10"\`
-• \`connect "inflation" "https://twitter.com/user/status/1234567890"\`
-• \`suggest post elonmusk\`
+• \`topic association "inflation" "Relevant Tweets" "1:10"\` - Searches in channel's topic folder
+• \`connect "inflation" "https://twitter.com/user/status/1234567890"\` - Searches in channel's topic folder
+• \`suggest post elonmusk\` - Generate topic-specific suggestions (requires set topic first)
 
 **Legacy Support:**
 • \`set ethereum\` - Still works, equivalent to \`set topic ethereum\``;
