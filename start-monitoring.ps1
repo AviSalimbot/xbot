@@ -5,9 +5,15 @@
 
 $SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $MONITOR_SCRIPT = Join-Path $SCRIPT_DIR "monitorRelevantTweets.js"
-$PID_FILE = Join-Path $SCRIPT_DIR ".monitor.pid"
-$LOCK_FILE = Join-Path $SCRIPT_DIR ".monitor.lock"
-$LOG_FILE = Join-Path $SCRIPT_DIR "monitor.log"
+
+# Get topic from command line argument or environment variable
+$TOPIC = if ($args.Count -gt 1) { $args[1] } else { $env:TOPIC }
+if (-not $TOPIC) { $TOPIC = "ethereum" }
+
+# Topic-specific file naming
+$PID_FILE = Join-Path $SCRIPT_DIR ".${TOPIC}_monitor.pid"
+$LOCK_FILE = Join-Path $SCRIPT_DIR ".${TOPIC}_monitor.lock"
+$LOG_FILE = Join-Path $SCRIPT_DIR "${TOPIC}_monitor.log"
 
 # Function to check if monitoring is already running
 function Test-MonitoringRunning {
@@ -126,8 +132,16 @@ function Start-Monitoring {
     Start-SleepPrevention
     
     try {
+        # Prepare environment variables
+        $envVars = @{
+            "TOPIC" = $TOPIC
+        }
+        if ($env:FOLLOWER_OVERRIDE) {
+            $envVars["FOLLOWER_OVERRIDE"] = $env:FOLLOWER_OVERRIDE
+        }
+        
         # Start the monitoring script in background using Start-Process
-        $process = Start-Process -FilePath "node" -ArgumentList "monitorRelevantTweets.js" -WorkingDirectory $SCRIPT_DIR -WindowStyle Hidden -PassThru
+        $process = Start-Process -FilePath "node" -ArgumentList "monitorRelevantTweets.js" -WorkingDirectory $SCRIPT_DIR -WindowStyle Hidden -PassThru -Environment $envVars
         
         # Save PID
         $process.Id | Out-File $PID_FILE
@@ -159,9 +173,11 @@ function Start-Monitoring {
 function Stop-Monitoring {
     if (-not (Test-MonitoringRunning)) {
         Write-Host "Monitoring is not running" -ForegroundColor Yellow
-        # Still try to clean up sleep prevention
+        # Still try to clean up sleep prevention and remaining processes
         Stop-SleepPrevention
-        return $false
+        # No global cleanup - only clean up sleep prevention for this topic
+        # Return success since the goal (stop monitoring) is achieved
+        return $true
     }
 
     $processId = Get-Content $PID_FILE

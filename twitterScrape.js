@@ -60,7 +60,7 @@ async function analyzeTweet(tweetText) {
   });
 }
 
-async function scrapeEthereumTweets() {
+async function scrapeTweets(topicConfig) {
   const browser = await puppeteer.connect({
     browserURL: 'http://localhost:9222',
   });
@@ -68,8 +68,13 @@ async function scrapeEthereumTweets() {
   page.setDefaultNavigationTimeout(90000);
 
   try {
-    console.log('✅ Navigating to search page...');
-    await page.goto('https://twitter.com/search?q=ethereum%20-scam%20-giveaway%20-airdrop%20-bot%20-pump%20-dump&src=typed_query&f=top', {
+    const searchQuery = encodeURIComponent(topicConfig.searchQuery);
+    const searchUrl = `https://twitter.com/search?q=${searchQuery}&src=typed_query&f=top`;
+    
+    console.log(`✅ Navigating to search page for ${topicConfig.name}...`);
+    console.log(`Search URL: ${searchUrl}`);
+    
+    await page.goto(searchUrl, {
       waitUntil: 'networkidle2',
       timeout: 90000,
     });
@@ -125,7 +130,17 @@ async function scrapeEthereumTweets() {
   }
 }
 
+// Keep the old function for backwards compatibility
+async function scrapeEthereumTweets() {
+  const fs = require('fs');
+  const path = require('path');
+  const configPath = path.join(__dirname, 'config.json');
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  return scrapeTweets(config.ethereum);
+}
+
 module.exports = {
+  scrapeTweets,
   scrapeEthereumTweets,
   analyzeTweet
 };

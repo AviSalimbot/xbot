@@ -1,15 +1,30 @@
 const puppeteer = require('puppeteer');
 
 async function scrapeLatestEngagers() {
-  // Connect to an existing Chrome with remote debugging enabled
-  const browser = await puppeteer.connect({
-    browserURL: 'http://localhost:9222',
-  });
-
-  const page = await browser.newPage();
-  page.setDefaultNavigationTimeout(120000); // ⏱️ Increased timeout
-
+  let browser = null;
+  let page = null;
+  
   try {
+    // Connect with retry logic
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        browser = await puppeteer.connect({
+          browserURL: 'http://localhost:9222',
+        });
+        break;
+      } catch (connectError) {
+        retries--;
+        if (retries === 0) {
+          throw new Error(`Browser connection failed: ${connectError.message}`);
+        }
+        console.log(`⚠️ Browser connection failed, retrying... (${3 - retries}/3)`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+
+    page = await browser.newPage();
+    page.setDefaultNavigationTimeout(120000); // ⏱️ Increased timeout
 
     console.log('✅ Navigating to notifications...');
     await page.goto('https://twitter.com/notifications', { waitUntil: 'networkidle2' });
@@ -78,8 +93,19 @@ async function scrapeLatestEngagers() {
 
   } catch (err) {
     console.error('❌ Scraper failed:', err.message);
-    await page.close(); // Close the main page tab on error as well
     return { success: false, engagers: [], error: err.message };
+  } finally {
+    // Cleanup
+    try {
+      if (page && !page.isClosed()) {
+        await page.close();
+      }
+      if (browser && browser.connected) {
+        await browser.disconnect();
+      }
+    } catch (cleanupError) {
+      console.error('Error during cleanup:', cleanupError.message);
+    }
   }
 }
 

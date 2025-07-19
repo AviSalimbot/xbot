@@ -5,8 +5,14 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONITOR_SCRIPT="$SCRIPT_DIR/monitorRelevantTweets.js"
-PID_FILE="$SCRIPT_DIR/.monitor.pid"
-LOCK_FILE="$SCRIPT_DIR/.monitor.lock"
+
+# Get topic from command line argument or environment variable
+TOPIC="${2:-${TOPIC:-ethereum}}"
+
+# Topic-specific files
+PID_FILE="$SCRIPT_DIR/.${TOPIC}_monitor.pid"
+LOCK_FILE="$SCRIPT_DIR/.${TOPIC}_monitor.lock"
+LOG_FILE="$SCRIPT_DIR/${TOPIC}_monitor.log"
 
 # Function to check if monitoring is already running
 is_running() {
@@ -35,7 +41,12 @@ start_monitoring() {
     
     # Start the monitoring script with caffeinate in the background
     # -i prevents idle sleep, -s prevents system sleep
-    nohup caffeinate -is node "$MONITOR_SCRIPT" > "$SCRIPT_DIR/monitor.log" 2>&1 &
+    # Set TOPIC and FOLLOWER_OVERRIDE environment variables for the monitoring process
+    ENV_VARS="TOPIC=$TOPIC"
+    if [ -n "$FOLLOWER_OVERRIDE" ]; then
+        ENV_VARS="$ENV_VARS FOLLOWER_OVERRIDE=$FOLLOWER_OVERRIDE"
+    fi
+    nohup caffeinate -is env $ENV_VARS node "$MONITOR_SCRIPT" > "$LOG_FILE" 2>&1 &
     
     # Get the PID of the caffeinate process
     CAFFEINATE_PID=$!
@@ -46,8 +57,9 @@ start_monitoring() {
     
     if is_running; then
         echo "Monitoring started successfully (PID: $CAFFEINATE_PID)"
-        echo "Logs: $SCRIPT_DIR/monitor.log"
-        echo "To stop: $SCRIPT_DIR/stop-monitoring.sh"
+        echo "Topic: $TOPIC"
+        echo "Logs: $LOG_FILE"
+        echo "To stop: $SCRIPT_DIR/stop-monitoring.sh stop $TOPIC"
         return 0
     else
         echo "Failed to start monitoring"
@@ -59,8 +71,11 @@ start_monitoring() {
 # Function to stop monitoring
 stop_monitoring() {
     if ! is_running; then
-        echo "Monitoring is not running"
-        return 1
+        echo "Monitoring is not running for topic: $TOPIC"
+        # Still try to clean up any remaining processes for this specific topic
+        # No global cleanup when topic is not running
+        # Return 0 since the goal (stop monitoring) is achieved
+        return 0
     fi
 
     PID=$(cat "$PID_FILE")
@@ -83,8 +98,8 @@ stop_monitoring() {
         kill -9 "$PID" 2>/dev/null
     fi
     
-    # Force kill any remaining monitorRelevantTweets.js processes
-    pkill -9 -f "monitorRelevantTweets.js" 2>/dev/null
+    # Only clean up topic-specific processes, not all monitoring processes
+    # The specific process should already be killed above
     
     # Clean up files
     rm -f "$PID_FILE"
@@ -109,12 +124,13 @@ get_status() {
         
         return 0
     else
-        echo "Monitoring is not running"
+        echo "Monitoring is not running for topic: $TOPIC"
         return 1
     fi
 }
 
 # Main script logic
+# Usage: ./start-monitoring.sh {start|stop|restart|status} [topic]
 case "${1:-start}" in
     start)
         start_monitoring
@@ -131,11 +147,12 @@ case "${1:-start}" in
         get_status
         ;;
     *)
-        echo "Usage: $0 {start|stop|restart|status}"
-        echo "  start   - Start monitoring with sleep prevention"
-        echo "  stop    - Stop monitoring"
-        echo "  restart - Restart monitoring"
-        echo "  status  - Check monitoring status"
+        echo "Usage: $0 {start|stop|restart|status} [topic]"
+        echo "  start [topic]   - Start monitoring with sleep prevention (default: ethereum)"
+        echo "  stop [topic]    - Stop monitoring for specific topic"
+        echo "  restart [topic] - Restart monitoring for specific topic"
+        echo "  status [topic]  - Check monitoring status for specific topic"
+        echo "  topic defaults to 'ethereum' if not specified"
         exit 1
         ;;
 esac

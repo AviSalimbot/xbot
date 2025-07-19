@@ -2,15 +2,40 @@ require('dotenv').config();
 const puppeteer = require('puppeteer-core'); // use puppeteer-core for connect()
 
 async function scrapeTopTweets() {
-  const browser = await puppeteer.connect({
-    browserURL: 'http://localhost:9222',
-  });
-  const page = await browser.newPage();
-  page.setDefaultNavigationTimeout(60000);
-
+  let browser = null;
+  let page = null;
+  
   try {
+    // Check if TWITTER_USERNAME is set
+    if (!process.env.TWITTER_USERNAME) {
+      throw new Error('TWITTER_USERNAME environment variable is not set');
+    }
+    
+    // Remove @ symbol if present
+    const username = process.env.TWITTER_USERNAME.replace('@', '');
+    
+    // Connect with retry logic
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        browser = await puppeteer.connect({
+          browserURL: 'http://localhost:9222',
+        });
+        break;
+      } catch (connectError) {
+        retries--;
+        if (retries === 0) {
+          throw new Error(`Browser connection failed: ${connectError.message}`);
+        }
+        console.log(`⚠️ Browser connection failed, retrying... (${3 - retries}/3)`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+    
+    page = await browser.newPage();
+    page.setDefaultNavigationTimeout(90000);
     console.log('✅ Navigating to your tweets...');
-    await page.goto(`https://twitter.com/${process.env.TWITTER_USERNAME}/with_replies`, {
+    await page.goto(`https://twitter.com/${username}/with_replies`, {
       waitUntil: 'networkidle2',
     });
 
@@ -58,15 +83,21 @@ async function scrapeTopTweets() {
     await page.close();
 
     return topTweets;
-  } catch (err) {
-    console.error('❌ Scraping error:', err.message);
-
-    // Safely close page if open
-    if (!page.isClosed()) {
-      await page.close();
-    }
-
+  } catch (error) {
+    console.error('❌ Error scraping tweets:', error.message);
     return [];
+  } finally {
+    // Cleanup
+    try {
+      if (page && !page.isClosed()) {
+        await page.close();
+      }
+      if (browser && browser.connected) {
+        await browser.disconnect();
+      }
+    } catch (cleanupError) {
+      console.error('Error during cleanup:', cleanupError.message);
+    }
   }
 }
 

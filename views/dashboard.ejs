@@ -24,9 +24,21 @@
 		</a>
 		<ul class="side-menu top">
 			<li>
+				<a href="#" id="homeBtn">
+					<i class='bx bxs-home'></i>
+					<span class="text">Home</span>
+				</a>
+			</li>
+			<li id="relevantNavItem" class="sub-item" style="display: none;">
 				<a href="#" id="relevantBtn">
 					<i class='bx bxs-dashboard'></i>
 					<span class="text">Relevant Tweets</span>
+				</a>
+			</li>
+			<li id="topicAssociationNavItem" class="sub-item" style="display: none;">
+				<a href="#" id="topicAssociationBtn">
+					<i class='bx bxs-network-chart'></i>
+					<span class="text">Topic Association</span>
 				</a>
 			</li>
 			<li>
@@ -42,15 +54,9 @@
 				</a>
 			</li>
 			<li>
-				<a href="#" id="followAccountsBtn">
+				<a href="#" id="followAccountsBtn" title="">
 					<i class='bx bxs-user-plus'></i>
 					<span class="text">Follow Accounts</span>
-				</a>
-			</li>
-			<li>
-				<a href="#" id="topicAssociationBtn">
-					<i class='bx bxs-network-chart'></i>
-					<span class="text">Topic Association</span>
 				</a>
 			</li>
 		</ul>
@@ -81,23 +87,24 @@
 				<div class="welcome-content">
 					<i class='bx bxs-smile welcome-icon'></i>
 					<h2>Welcome to the Twitter Analytics Dashboard</h2>
-					<p>Get started by selecting an option from the sidebar or below:</p>
-					<div class="welcome-options">
+					<div class="topic-selection">
+						<label for="topicSelect">Select Topic:</label>
+						<select id="topicSelect" onchange="setTopic()">
+							<option value="" disabled selected>Choose a topic...</option>
+							<option value="ethereum">Ethereum</option>
+							<option value="basketball">Basketball</option>
+						</select>
+					</div>
+					<div class="follower-filter" id="followerFilter" style="display: none;">
+						<label for="followerCount">Minimum Follower Count:</label>
+						<input type="number" id="followerCount" min="0" step="100" />
+						<small>Filter results by minimum follower count</small>
+					</div>
+					<p id="welcomeText">Please select a topic to get started.</p>
+					<div class="welcome-options" id="welcomeOptions" style="display: none;">
 						<div class="welcome-option" data-action="relevant">
 							<i class='bx bxs-dashboard'></i>
 							<span>Relevant Tweets</span>
-						</div>
-						<div class="welcome-option" data-action="top">
-							<i class='bx bxs-chat'></i>
-							<span>My Tweets</span>
-						</div>
-						<div class="welcome-option" data-action="engagers">
-							<i class='bx bxs-group'></i>
-							<span>Engagers</span>
-						</div>
-						<div class="welcome-option" data-action="follow">
-							<i class='bx bxs-user-plus'></i>
-							<span>Follow Accounts</span>
 						</div>
 						<div class="welcome-option" data-action="topic-association">
 							<i class='bx bxs-network-chart'></i>
@@ -132,6 +139,134 @@
 		const subTitle = document.getElementById('subTitle');
 		const welcomeMessage = document.getElementById('welcomeMessage');
 		const resultsContainer = document.getElementById('resultsContainer');
+		
+		let selectedTopic = null;
+		
+		function getFollowerCount() {
+			const followerCountInput = document.getElementById('followerCount');
+			return followerCountInput.value ? parseInt(followerCountInput.value) : 1000;
+		}
+		
+		async function setTopic() {
+			const topicSelect = document.getElementById('topicSelect');
+			const welcomeText = document.getElementById('welcomeText');
+			const welcomeOptions = document.getElementById('welcomeOptions');
+			const followerFilter = document.getElementById('followerFilter');
+			const followerCountInput = document.getElementById('followerCount');
+			const relevantNavItem = document.getElementById('relevantNavItem');
+			const topicAssociationNavItem = document.getElementById('topicAssociationNavItem');
+			
+			selectedTopic = topicSelect.value;
+			
+			if (selectedTopic) {
+				welcomeText.textContent = `Topic set to ${topicSelect.options[topicSelect.selectedIndex].text}. Set follower filter and choose an action below:`;
+				welcomeOptions.style.display = 'flex';
+				followerFilter.style.display = 'block';
+				
+				// Get default follower count from config for this topic
+				try {
+					const configResponse = await fetch('/get-topic-config', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ topic: selectedTopic })
+					});
+					const configData = await configResponse.json();
+					
+					if (configData.success && configData.config.followersThreshold) {
+						followerCountInput.value = configData.config.followersThreshold;
+					}
+				} catch (err) {
+					console.log('Error getting topic config:', err);
+					// Set a default value if config fetch fails
+					followerCountInput.value = 1000;
+				}
+				
+				// Show the topic-specific navigation items
+				relevantNavItem.style.display = 'block';
+				topicAssociationNavItem.style.display = 'block';
+				
+				// Enable Follow Accounts button
+				updateFollowAccountsButton(true);
+				
+				// Send topic to server with error handling
+				try {
+					const response = await fetch('/set-topic', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ topic: selectedTopic })
+					});
+					
+					const result = await response.json();
+					
+					if (!result.success) {
+						// Invalid topic - show error and reset
+						alert(`❌ Invalid topic "${selectedTopic}": ${result.message}\n\nPlease choose from the available topics: ethereum, basketball`);
+						
+						// Reset the dropdown
+						topicSelect.value = '';
+						selectedTopic = null;
+						
+						// Hide all topic-dependent elements
+						welcomeText.textContent = 'Please select a topic to get started.';
+						welcomeOptions.style.display = 'none';
+						followerFilter.style.display = 'none';
+						relevantNavItem.style.display = 'none';
+						topicAssociationNavItem.style.display = 'none';
+						updateFollowAccountsButton(false);
+						
+						return;
+					}
+				} catch (err) {
+					console.log('Error setting topic:', err);
+					alert('❌ Error setting topic. Please try again.');
+					
+					// Reset on error
+					topicSelect.value = '';
+					selectedTopic = null;
+					welcomeText.textContent = 'Please select a topic to get started.';
+					welcomeOptions.style.display = 'none';
+					followerFilter.style.display = 'none';
+					relevantNavItem.style.display = 'none';
+					topicAssociationNavItem.style.display = 'none';
+					updateFollowAccountsButton(false);
+					
+					return;
+				}
+			} else {
+				welcomeText.textContent = 'Please select a topic to get started.';
+				welcomeOptions.style.display = 'none';
+				followerFilter.style.display = 'none';
+				
+				// Hide the topic-specific navigation items
+				relevantNavItem.style.display = 'none';
+				topicAssociationNavItem.style.display = 'none';
+				
+				// Disable Follow Accounts button
+				updateFollowAccountsButton(false);
+			}
+		}
+
+		// Function to update Follow Accounts button state
+		function updateFollowAccountsButton(enabled) {
+			const followBtn = document.getElementById('followAccountsBtn');
+			console.log('Updating follow button:', enabled, followBtn);
+			if (enabled) {
+				followBtn.classList.remove('disabled');
+				followBtn.title = '';
+				followBtn.style.opacity = '1';
+				followBtn.style.cursor = 'pointer';
+			} else {
+				followBtn.classList.add('disabled');
+				followBtn.title = 'Set topic first';
+				followBtn.style.opacity = '0.5';
+				followBtn.style.cursor = 'not-allowed';
+			}
+			console.log('Button title set to:', followBtn.title);
+		}
 
 		const switchMode = document.getElementById('switch-mode');
 
@@ -143,6 +278,38 @@
 			}
 		})
 
+		// Automatically select Home on page load and check for existing topic
+		window.addEventListener('DOMContentLoaded', async () => {
+			activateSidebarItem('home');
+			
+			// Check if a topic is already set in the session
+			try {
+				const response = await fetch('/get-current-topic');
+				const data = await response.json();
+				
+				console.log('Topic check response:', data);
+				
+				if (data.success && data.topic) {
+					// Set the dropdown to the current topic
+					const topicSelect = document.getElementById('topicSelect');
+					topicSelect.value = data.topic;
+					selectedTopic = data.topic;
+					
+					console.log('Setting topic to:', data.topic);
+					
+					// Trigger the setTopic function to show all UI elements
+					await setTopic();
+				} else {
+					// No topic set, disable Follow Accounts button
+					updateFollowAccountsButton(false);
+				}
+			} catch (err) {
+				console.log('No existing topic found or error checking topic:', err);
+				// No topic set, disable Follow Accounts button
+				updateFollowAccountsButton(false);
+			}
+		});
+
 		// Function to activate sidebar item
 		function activateSidebarItem(action) {
 			// Remove active class from all sidebar items
@@ -152,29 +319,63 @@
 			
 			// Add active class to the corresponding sidebar item
 			switch(action) {
-				case 'relevant':
+				case 'home':
 					document.querySelector('#sidebar .side-menu.top li:first-child').classList.add('active');
 					break;
-				case 'top':
-					document.querySelector('#sidebar .side-menu.top li:nth-child(2)').classList.add('active');
-					break;
-				case 'engagers':
-					document.querySelector('#sidebar .side-menu.top li:nth-child(3)').classList.add('active');
-					break;
-				case 'follow':
-					document.querySelector('#sidebar .side-menu.top li:nth-child(4)').classList.add('active');
+				case 'relevant':
+					document.getElementById('relevantNavItem').classList.add('active');
 					break;
 				case 'topic-association':
+					document.getElementById('topicAssociationNavItem').classList.add('active');
+					break;
+				case 'top':
+					document.querySelector('#sidebar .side-menu.top li:nth-child(4)').classList.add('active');
+					break;
+				case 'engagers':
 					document.querySelector('#sidebar .side-menu.top li:nth-child(5)').classList.add('active');
 					break;
-				case 'monitor':
+				case 'follow':
 					document.querySelector('#sidebar .side-menu.top li:nth-child(6)').classList.add('active');
 					break;
 			}
 		}
 
 		// Sidebar button event listeners
+		document.getElementById('homeBtn').addEventListener('click', () => {
+			activateSidebarItem('home');
+			showWelcome();
+			resultsTitle.textContent = 'Twitter Analytics Dashboard';
+			
+			// Show/hide topic-specific elements based on current topic selection
+			const relevantNavItem = document.getElementById('relevantNavItem');
+			const topicAssociationNavItem = document.getElementById('topicAssociationNavItem');
+			const followerFilter = document.getElementById('followerFilter');
+			const welcomeOptions = document.getElementById('welcomeOptions');
+			const topicSelect = document.getElementById('topicSelect');
+			
+			if (topicSelect.value) {
+				relevantNavItem.style.display = 'block';
+				topicAssociationNavItem.style.display = 'block';
+				followerFilter.style.display = 'block';
+				welcomeOptions.style.display = 'flex';
+			} else {
+				relevantNavItem.style.display = 'none';
+				topicAssociationNavItem.style.display = 'none';
+				followerFilter.style.display = 'none';
+				welcomeOptions.style.display = 'none';
+			}
+		});
+
 		document.getElementById('relevantBtn').addEventListener('click', () => {
+			const topicSelect = document.getElementById('topicSelect');
+			if (!selectedTopic && !topicSelect.value) {
+				showTopicRequiredMessage('Relevant Tweets');
+				return;
+			}
+			// Update selectedTopic if it's not set but dropdown has value
+			if (!selectedTopic && topicSelect.value) {
+				selectedTopic = topicSelect.value;
+			}
 			activateSidebarItem('relevant');
 			showResults();
 			loadMonitor();
@@ -183,6 +384,7 @@
 		});
 
 		document.getElementById('topBtn').addEventListener('click', () => {
+			// My Tweets doesn't require a topic
 			activateSidebarItem('top');
 			showResults();
 			loadTweets('/my-top');
@@ -191,6 +393,7 @@
 		});
 
 		document.getElementById('engagersBtn').addEventListener('click', () => {
+			// Latest Engagers doesn't require a topic
 			activateSidebarItem('engagers');
 			showResults();
 			loadEngagers();
@@ -198,7 +401,19 @@
 			subTitle.textContent = 'Users';
 		});
 
-		document.getElementById('followAccountsBtn').addEventListener('click', () => {
+		document.getElementById('followAccountsBtn').addEventListener('click', (e) => {
+			// Check if button is disabled
+			if (e.target.closest('#followAccountsBtn').classList.contains('disabled')) {
+				// Button is disabled, do nothing (tooltip will show)
+				return;
+			}
+			
+			// Follow Accounts requires a topic to be set
+			const topicSelect = document.getElementById('topicSelect');
+			if (!selectedTopic && !topicSelect.value) {
+				showTopicRequiredMessage('Follow Accounts');
+				return;
+			}
 			activateSidebarItem('follow');
 			showResults();
 			followAccounts();
@@ -207,6 +422,15 @@
 		});
 
 		document.getElementById('topicAssociationBtn').addEventListener('click', () => {
+			const topicSelect = document.getElementById('topicSelect');
+			if (!selectedTopic && !topicSelect.value) {
+				showTopicRequiredMessage('Topic Association');
+				return;
+			}
+			// Update selectedTopic if it's not set but dropdown has value
+			if (!selectedTopic && topicSelect.value) {
+				selectedTopic = topicSelect.value;
+			}
 			activateSidebarItem('topic-association');
 			showResults();
 			loadTopicAssociation();
@@ -262,9 +486,32 @@
 		}
 
 		function showWelcome() {
-			welcomeMessage.style.display = 'block';
+			welcomeMessage.style.display = 'flex';
 			resultsContainer.style.display = 'none';
 			statusDiv.style.display = 'none';
+		}
+
+		function showTopicRequiredMessage(featureName) {
+			activateSidebarItem('home');
+			showWelcome();
+			resultsTitle.textContent = 'Topic Selection Required';
+			
+			// Highlight the topic selection
+			const topicSelect = document.getElementById('topicSelect');
+			const welcomeText = document.getElementById('welcomeText');
+			
+			welcomeText.textContent = `Please select a topic first to use ${featureName}.`;
+			welcomeText.style.color = 'var(--red)';
+			topicSelect.style.borderColor = 'var(--red)';
+			
+			// Reset styling after 3 seconds
+			setTimeout(() => {
+				welcomeText.style.color = '';
+				topicSelect.style.borderColor = '';
+				if (!selectedTopic) {
+					welcomeText.textContent = 'Please select a topic to get started.';
+				}
+			}, 3000);
 		}
 
 		function clearResults() {
@@ -333,13 +580,88 @@
 		}
 
 		async function followAccounts() {
+			// Show threshold selection UI instead of running immediately
+			await showFollowAccountsThresholdUI();
+		}
+
+		async function showFollowAccountsThresholdUI() {
+			container.innerHTML = '';
+			statusDiv.style.display = 'none';
+
+			try {
+				// Get current topic's followAccountsThreshold from config
+				const configResponse = await fetch('/get-topic-config', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ topic: selectedTopic })
+				});
+				const configData = await configResponse.json();
+				
+				const defaultThreshold = configData.success && configData.config.followAccountsThreshold 
+					? configData.config.followAccountsThreshold 
+					: 5000;
+
+				// Create threshold selection UI
+				container.innerHTML = `
+					<div class="follow-threshold-container">
+						<div class="threshold-header">
+							<h3>Follow Accounts Configuration</h3>
+							<p>Configure the follower threshold for accounts to follow</p>
+						</div>
+						
+						<div class="threshold-setting">
+							<label for="followThresholdInput"><strong>Minimum Follower Count:</strong></label>
+							<input type="number" id="followThresholdInput" value="${defaultThreshold}" min="0" step="100" />
+							<p class="threshold-note">Default for ${selectedTopic}: ${defaultThreshold.toLocaleString()} followers</p>
+						</div>
+						
+						<div class="threshold-actions">
+							<button id="runFollowAccounts" class="action-btn primary">
+								<i class='bx bxs-user-plus'></i>
+								Follow Accounts
+							</button>
+							<button id="cancelFollowAccounts" class="action-btn secondary">
+								Cancel
+							</button>
+						</div>
+					</div>
+				`;
+
+				// Add event listeners
+				document.getElementById('runFollowAccounts').addEventListener('click', () => {
+					const threshold = document.getElementById('followThresholdInput').value;
+					executeFollowAccounts(parseInt(threshold));
+				});
+
+				document.getElementById('cancelFollowAccounts').addEventListener('click', () => {
+					container.innerHTML = '';
+					statusDiv.style.display = 'none';
+				});
+
+			} catch (error) {
+				statusDiv.style.display = '';
+				statusDiv.textContent = 'Error loading follow accounts configuration.';
+				statusDiv.className = 'status-message status-error';
+			}
+		}
+
+		async function executeFollowAccounts(threshold) {
 			container.innerHTML = '';
 			statusDiv.style.display = '';
-			statusDiv.textContent = 'Following accounts, please wait...';
+			statusDiv.textContent = `Following accounts with ${threshold.toLocaleString()}+ followers, please wait...`;
 			statusDiv.className = 'status-message';
 
 			try {
-				const response = await fetch('/follow');
+				// Send threshold to server
+				const response = await fetch('/follow', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ threshold: threshold })
+				});
 				const data = await response.json();
 
 				if (data.success) {
@@ -392,6 +714,12 @@
 				// Get current monitoring status
 				const statusResponse = await fetch('/monitor/status');
 				const statusData = await statusResponse.json();
+				
+				// Handle topic not selected error
+				if (!statusData.success && statusData.needsTopicSelection) {
+					showTopicRequiredMessage('Relevant Tweets Monitor');
+					return;
+				}
 
 				// Create monitor interface
 				container.innerHTML = `
@@ -495,6 +823,13 @@
 		async function loadTopicAssociation() {
 			container.innerHTML = '';
 			statusDiv.style.display = 'none';
+			
+			// Check if topic is selected first
+			const topicSelect = document.getElementById('topicSelect');
+			if (!selectedTopic && !topicSelect.value) {
+				showTopicRequiredMessage('Topic Association');
+				return;
+			}
 
 			// Create Topic Association interface
 			container.innerHTML = `
