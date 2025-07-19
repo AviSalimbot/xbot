@@ -113,8 +113,91 @@ async function collectUserTweets(twitterHandle) {
       }
     }
     
-    // Set user agent to avoid rate limiting
-    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    // Set stealth configurations to avoid detection
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+    
+    // Add extra headers to appear more like a real browser
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+      'Upgrade-Insecure-Requests': '1',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-User': '?1',
+      'Cache-Control': 'max-age=0'
+    });
+    
+    // Disable webdriver detection and other bot-like behaviors
+    await page.evaluateOnNewDocument(() => {
+      // Remove webdriver property
+      Object.defineProperty(navigator, 'webdriver', {
+        get: () => undefined,
+      });
+      
+      // Mock plugins to appear like a real browser
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [
+          {
+            0: {
+              type: "application/x-google-chrome-pdf",
+              suffixes: "pdf",
+              description: "Portable Document Format",
+              enabledPlugin: Plugin
+            },
+            description: "Portable Document Format",
+            filename: "internal-pdf-viewer",
+            length: 1,
+            name: "Chrome PDF Plugin"
+          }
+        ],
+      });
+      
+      // Mock languages
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['en-US', 'en'],
+      });
+      
+      // Mock permissions
+      const originalQuery = window.navigator.permissions.query;
+      window.navigator.permissions.query = (parameters) => (
+        parameters.name === 'notifications' ?
+          Promise.resolve({ state: Notification.permission }) :
+          originalQuery(parameters)
+      );
+      
+      // Hide that Chrome is being controlled by automation
+      window.chrome = {
+        runtime: {},
+      };
+    });
+    
+    // Randomize viewport to avoid fingerprinting
+    const viewports = [
+      { width: 1366, height: 768 },
+      { width: 1920, height: 1080 },
+      { width: 1440, height: 900 },
+      { width: 1280, height: 720 }
+    ];
+    const randomViewport = viewports[Math.floor(Math.random() * viewports.length)];
+    await page.setViewport(randomViewport);
+    
+    // Set some basic cookies to appear like a returning user
+    await page.setCookie(
+      {
+        name: 'lang',
+        value: 'en',
+        domain: '.x.com'
+      },
+      {
+        name: 'personalization_id',
+        value: '"v1_' + Math.random().toString(36).substr(2, 9) + '"',
+        domain: '.x.com'
+      }
+    );
+    
+    // Enable JavaScript (some sites check for this)
+    await page.setJavaScriptEnabled(true);
     
     // Navigate to user's profile with retry logic
     const profileUrl = `https://x.com/${cleanHandle}`;
@@ -123,8 +206,12 @@ async function collectUserTweets(twitterHandle) {
     let navRetries = 3;
     while (navRetries > 0) {
       try {
-        await page.goto(profileUrl, { waitUntil: 'networkidle0', timeout: 60000 });
+        // Use a more relaxed wait condition
+        await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
         console.log(`✅ Navigation successful`);
+        
+        // Add a small random delay to appear more human-like
+        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
         break;
       } catch (navError) {
         navRetries--;
@@ -136,18 +223,35 @@ async function collectUserTweets(twitterHandle) {
       }
     }
     
-    // Wait for tweets to load with retries
+    // Wait for tweets to load with multiple selector strategies
     let tweetsLoaded = false;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        await page.waitForSelector('article[data-testid="tweet"]', { timeout: 10000 });
-        tweetsLoaded = true;
-        console.log(`✅ Tweets loaded successfully`);
-        break;
-      } catch (e) {
-        console.log(`⚠️ Waiting for tweets... attempt ${attempt + 1}/3`);
-        await new Promise(resolve => setTimeout(resolve, 3000));
+    const tweetSelectors = [
+      'article[data-testid="tweet"]',
+      '[data-testid="tweet"]',
+      'article[role="article"]',
+      'div[data-testid="tweetText"]',
+      '[data-testid="tweetText"]'
+    ];
+    
+    for (let attempt = 0; attempt < 5; attempt++) {
+      console.log(`⚠️ Waiting for tweets... attempt ${attempt + 1}/5`);
+      
+      for (const selector of tweetSelectors) {
+        try {
+          await page.waitForSelector(selector, { timeout: 8000 });
+          console.log(`✅ Tweets loaded successfully with selector: ${selector}`);
+          tweetsLoaded = true;
+          break;
+        } catch (e) {
+          // Try next selector
+        }
       }
+      
+      if (tweetsLoaded) break;
+      
+      // Try scrolling a bit to trigger loading
+      await page.evaluate(() => window.scrollBy(0, 500));
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
     if (!tweetsLoaded) {
@@ -181,31 +285,70 @@ async function collectUserTweets(twitterHandle) {
     // Final wait for all content to settle
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Extract tweets with better error handling
+    // Extract tweets with improved selector strategies
     console.log(`🔍 Extracting tweets from page...`);
     const tweets = await page.evaluate(() => {
-      const articles = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
+      // Try multiple article selectors
+      let articles = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
+      if (articles.length === 0) {
+        articles = Array.from(document.querySelectorAll('[data-testid="tweet"]'));
+      }
+      if (articles.length === 0) {
+        articles = Array.from(document.querySelectorAll('article[role="article"]'));
+      }
+      
       console.log(`Found ${articles.length} tweet articles`);
       
       return articles.slice(0, 15).map((article, index) => {
         try {
-          // Get tweet text
-          const textElement = article.querySelector('[data-testid="tweetText"]');
-          const text = textElement ? textElement.innerText.trim() : '';
+          // Try multiple text selectors
+          let text = '';
+          const textSelectors = [
+            '[data-testid="tweetText"]',
+            'div[data-testid="tweetText"]',
+            'span[data-testid="tweetText"]',
+            '[lang]', // Twitter often adds lang attribute to tweet text
+            'div[lang]'
+          ];
           
-          // Get tweet link
+          for (const selector of textSelectors) {
+            const textElement = article.querySelector(selector);
+            if (textElement && textElement.innerText.trim()) {
+              text = textElement.innerText.trim();
+              break;
+            }
+          }
+          
+          // Try multiple link selectors
+          let tweetLink = '';
           const timeElement = article.querySelector('time');
-          const tweetLink = timeElement ? timeElement.closest('a')?.href : '';
+          if (timeElement) {
+            const linkElement = timeElement.closest('a');
+            tweetLink = linkElement ? linkElement.href : '';
+          }
+          
+          // If no direct time link, try other link patterns
+          if (!tweetLink) {
+            const links = article.querySelectorAll('a[href*="/status/"]');
+            if (links.length > 0) {
+              tweetLink = links[0].href;
+            }
+          }
           
           // Get relative time
           const timeText = timeElement ? timeElement.innerText : '';
           
-          return {
-            text,
-            link: tweetLink,
-            time: timeText,
-            index: index + 1
-          };
+          // Only return if we have some content
+          if (text || tweetLink) {
+            return {
+              text,
+              link: tweetLink,
+              time: timeText,
+              index: index + 1
+            };
+          }
+          
+          return null;
         } catch (e) {
           console.error(`Error extracting tweet ${index + 1}:`, e);
           return null;
@@ -214,6 +357,49 @@ async function collectUserTweets(twitterHandle) {
     });
     
     console.log(`✅ Collected ${tweets.length} tweets from @${cleanHandle}`);
+    
+    // Add debug information if no tweets were found
+    if (tweets.length === 0) {
+      console.log(`❌ No tweets extracted. Debugging page content...`);
+      
+      // Take a screenshot for debugging
+      try {
+        await page.screenshot({ path: `debug_${cleanHandle}_${Date.now()}.png`, fullPage: false });
+        console.log(`📸 Debug screenshot saved`);
+      } catch (e) {
+        console.log(`⚠️ Could not save debug screenshot: ${e.message}`);
+      }
+      
+      // Log page URL and title for debugging
+      try {
+        const pageUrl = page.url();
+        const pageTitle = await page.title();
+        console.log(`🔍 Page URL: ${pageUrl}`);
+        console.log(`🔍 Page Title: ${pageTitle}`);
+        
+        // Check for specific Twitter blocking scenarios
+        const pageContent = await page.content();
+        
+        if (pageUrl.includes('login') || pageTitle.toLowerCase().includes('login')) {
+          throw new Error('Twitter is requiring login - scraping blocked');
+        }
+        if (pageUrl.includes('suspended') || pageTitle.toLowerCase().includes('suspended')) {
+          throw new Error('Twitter account appears to be suspended');
+        }
+        if (pageUrl.includes('protected') || pageTitle.toLowerCase().includes('protected')) {
+          throw new Error('Twitter account is protected/private');
+        }
+        if (pageContent.includes('privacy related extensions') || pageContent.includes('Please disable them')) {
+          throw new Error('Twitter detected privacy extensions - browser fingerprinting blocked scraping');
+        }
+        if (pageContent.includes('rate limit') || pageContent.includes('Rate limit')) {
+          throw new Error('Twitter rate limiting detected - too many requests');
+        }
+      } catch (e) {
+        console.log(`⚠️ Could not get page info: ${e.message}`);
+      }
+    }
+    
     return tweets;
     
   } catch (error) {
@@ -268,16 +454,32 @@ async function collectUserTweets(twitterHandle) {
   }
 }
 
-async function getRecentTweetsFromSheet() {
-  console.log(`🔍 Fetching recent tweets from "Relevant Tweets" sheet...`);
+async function getRecentTweetsFromSheet(topic) {
+  console.log(`🔍 Fetching recent tweets from "Relevant Tweets" sheet in "${topic}" folder...`);
   
   try {
     const auth = await getAuth();
     const drive = google.drive({ version: 'v3', auth });
     const sheets = google.sheets({ version: 'v4', auth });
     
-    // Search for "Relevant Tweets" sheet
-    const sheetsQuery = `name='Relevant Tweets' and mimeType='application/vnd.google-apps.spreadsheet'`;
+    // First find the topic folder
+    const topicFolderQuery = `name='${topic}' and mimeType='application/vnd.google-apps.folder'`;
+    const folderResponse = await drive.files.list({
+      q: topicFolderQuery,
+      fields: 'files(id, name)',
+      orderBy: 'name'
+    });
+    
+    if (!folderResponse.data.files || folderResponse.data.files.length === 0) {
+      console.error(`❌ Topic folder "${topic}" not found`);
+      return [];
+    }
+    
+    const topicFolderId = folderResponse.data.files[0].id;
+    console.log(`✅ Found topic folder "${topic}" with ID: ${topicFolderId}`);
+    
+    // Search for "Relevant Tweets" sheet within the topic folder
+    const sheetsQuery = `name='Relevant Tweets' and parents in '${topicFolderId}' and mimeType='application/vnd.google-apps.spreadsheet'`;
     const sheetsResponse = await drive.files.list({
       q: sheetsQuery,
       fields: 'files(id, name)',
@@ -285,11 +487,12 @@ async function getRecentTweetsFromSheet() {
     });
     
     if (!sheetsResponse.data.files || sheetsResponse.data.files.length === 0) {
-      console.error('❌ "Relevant Tweets" sheet not found');
+      console.error(`❌ "Relevant Tweets" sheet not found in "${topic}" folder`);
       return [];
     }
     
     const sheetId = sheetsResponse.data.files[0].id;
+    console.log(`✅ Found "Relevant Tweets" sheet in "${topic}" folder with ID: ${sheetId}`);
     
     // Get the most recent 10 tweets
     const sheetResponse = await sheets.spreadsheets.values.get({
@@ -318,10 +521,10 @@ async function getRecentTweetsFromSheet() {
   }
 }
 
-async function generateSuggestions(userTweets, recentTweets, targetHandle) {
+async function generateSuggestions(userTweets, recentTweets, targetHandle, topic) {
   const isWindows = process.platform === 'win32';
   
-  console.log(`🤖 Generating post suggestions for @${targetHandle} using Claude ${isWindows ? 'API' : 'CLI'}...`);
+  console.log(`🤖 Generating post suggestions for @${targetHandle} using Claude ${isWindows ? 'API' : 'CLI'} with topic context: ${topic}...`);
   
   const userTweetsText = userTweets.map((tweet, i) => 
     `${i + 1}. "${tweet.text}" (${tweet.time})`
@@ -331,19 +534,20 @@ async function generateSuggestions(userTweets, recentTweets, targetHandle) {
     `${i + 1}. "${tweet.text}" by ${tweet.handle} (${tweet.date})\nURL: ${tweet.url}`
   ).join('\n\n');
   
-  const prompt = `You are an AI assistant helping to suggest posts for a Twitter user based on their preferences and current trending topics.
+  const prompt = `You are an AI assistant helping to suggest posts for a Twitter user based on their preferences and current trending topics within the "${topic}" domain.
 
 **User Profile Analysis:**
 Twitter Handle: @${targetHandle}
+Topic Context: ${topic}
 
 **User's Recent Tweets:**
 ${userTweetsText}
 
-**Recent Trending/Relevant Tweets:**
+**Recent Trending/Relevant Tweets (${topic} domain):**
 ${recentTweetsText}
 
 **Task:**
-Based on the user's recent tweets, analyze their posting style, interests, and preferences. Then suggest up to 3 tweets from the recent trending tweets that would align with their interests and style.
+Based on the user's recent tweets, analyze their posting style, interests, and preferences within the context of "${topic}". Then suggest up to 3 tweets from the recent trending ${topic}-related tweets that would align with their interests and style.
 
 **Instructions:**
 1. Analyze the user's tweet patterns, topics of interest, tone, and style
@@ -503,30 +707,55 @@ async function generateSuggestionsWithCLI(prompt, targetHandle) {
   });
 }
 
-async function suggestPost(twitterHandle) {
+async function suggestPost(twitterHandle, topic) {
   try {
-    console.log(`🚀 Starting post suggestion process for @${twitterHandle}`);
+    console.log(`🚀 Starting post suggestion process for @${twitterHandle} with topic: ${topic}`);
     
     // Step 1: Collect user's tweets
     const userTweets = await collectUserTweets(twitterHandle);
     if (userTweets.length === 0) {
+      // If we can't scrape user tweets, provide a fallback response
+      console.log(`⚠️ Could not scrape user tweets, providing trending tweets only...`);
+      
+      const recentTweets = await getRecentTweetsFromSheet(topic);
+      if (recentTweets.length === 0) {
+        return {
+          success: false,
+          message: `Could not collect tweets from @${twitterHandle} and no trending tweets available in "${topic}" folder. This could be due to Twitter's anti-bot measures.`
+        };
+      }
+      
+      // Return trending tweets without user analysis
       return {
-        success: false,
-        message: `Could not collect tweets from @${twitterHandle}. Please check the handle and try again.`
+        success: true,
+        userAnalysis: `Unable to analyze @${twitterHandle}'s tweets due to Twitter's anti-bot protection. Showing recent trending ${topic} tweets instead.`,
+        suggestions: recentTweets.slice(0, 5).map(tweet => ({
+          author: tweet.handle,
+          tweetText: tweet.text,
+          tweetUrl: tweet.url,
+          reason: `Trending in ${topic} category`,
+          engagementIdeas: [
+            'Like and retweet if relevant to your audience',
+            'Reply with your perspective on this topic',
+            'Quote tweet with additional insights'
+          ]
+        })),
+        userTweetsCount: 0,
+        recentTweetsCount: recentTweets.length
       };
     }
     
-    // Step 2: Get recent tweets from sheet
-    const recentTweets = await getRecentTweetsFromSheet();
+    // Step 2: Get recent tweets from topic-specific sheet
+    const recentTweets = await getRecentTweetsFromSheet(topic);
     if (recentTweets.length === 0) {
       return {
         success: false,
-        message: 'Could not fetch recent tweets from the "Relevant Tweets" sheet.'
+        message: `Could not fetch recent tweets from the "Relevant Tweets" sheet in "${topic}" folder.`
       };
     }
     
-    // Step 3: Generate suggestions
-    const suggestions = await generateSuggestions(userTweets, recentTweets, twitterHandle);
+    // Step 3: Generate suggestions with topic context
+    const suggestions = await generateSuggestions(userTweets, recentTweets, twitterHandle, topic);
     if (!suggestions) {
       return {
         success: false,
