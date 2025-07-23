@@ -97,21 +97,29 @@ async function startChrome() {
       console.log('⏳ Waiting for Chrome to start...');
       setTimeout(() => {
         // Check if Chrome is ready (cross-platform)
+        let chromeReady = false;
         const checkChrome = () => {
           const http = require('http');
           const req = http.get('http://localhost:9222', (res) => {
-            console.log('✅ Chrome is ready on port 9222');
-            resolve(true);
+            if (!chromeReady) {
+              console.log('✅ Chrome is ready on port 9222');
+              chromeReady = true;
+              resolve(true);
+            }
           });
           
           req.on('error', () => {
-            console.log('⏳ Still waiting for Chrome...');
-            setTimeout(checkChrome, 2000);
+            if (!chromeReady) {
+              console.log('⏳ Still waiting for Chrome...');
+              setTimeout(checkChrome, 2000);
+            }
           });
           
           req.setTimeout(1000, () => {
             req.abort();
-            setTimeout(checkChrome, 2000);
+            if (!chromeReady) {
+              setTimeout(checkChrome, 2000);
+            }
           });
         };
         checkChrome();
