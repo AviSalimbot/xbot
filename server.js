@@ -16,19 +16,53 @@ const topicAssociationRouter = require('./routes/topicAssociation');
 
 const app = express();
 
-// Function to kill existing Chrome processes (Windows-specific)
-async function killExistingChrome() {
+// Function to kill existing Chrome debug processes (Windows-specific)
+async function killExistingDebugChrome() {
   return new Promise((resolve) => {
     if (process.platform === 'win32') {
-      console.log('🔧 Killing existing Chrome processes...');
-      exec('taskkill /f /im chrome.exe', (error) => {
-        if (error) {
-          console.log('ℹ️ No existing Chrome processes found or already killed');
-        } else {
-          console.log('✅ Killed existing Chrome processes');
+      console.log('🔧 Checking for existing Chrome debug processes...');
+      
+      // First check if port 9222 is in use
+      exec('netstat -ano | findstr :9222', (error, stdout) => {
+        if (error || !stdout.trim()) {
+          console.log('ℹ️ No Chrome debug process found on port 9222');
+          resolve();
+          return;
         }
-        // Wait a moment for processes to fully terminate
-        setTimeout(resolve, 2000);
+        
+        // Extract PID from netstat output
+        const lines = stdout.trim().split('\n');
+        const pids = new Set();
+        
+        lines.forEach(line => {
+          const parts = line.trim().split(/\s+/);
+          const pid = parts[parts.length - 1];
+          if (pid && pid !== '0') {
+            pids.add(pid);
+          }
+        });
+        
+        if (pids.size === 0) {
+          console.log('ℹ️ No Chrome debug processes to kill');
+          resolve();
+          return;
+        }
+        
+        console.log(`🔧 Killing Chrome debug processes: ${Array.from(pids).join(', ')}`);
+        
+        // Kill only the specific PIDs using port 9222
+        const killCommands = Array.from(pids).map(pid => `taskkill /f /pid ${pid}`);
+        const killCommand = killCommands.join(' & ');
+        
+        exec(killCommand, (killError) => {
+          if (killError) {
+            console.log('⚠️ Some Chrome debug processes may not have been killed');
+          } else {
+            console.log('✅ Killed Chrome debug processes');
+          }
+          // Wait a moment for processes to fully terminate
+          setTimeout(resolve, 2000);
+        });
       });
     } else {
       resolve();
@@ -41,8 +75,8 @@ async function startChrome() {
   return new Promise(async (resolve) => {
     console.log('🚀 Starting Google Chrome with remote debugging...');
     
-    // Kill existing Chrome processes first
-    await killExistingChrome();
+    // Kill existing Chrome debug processes first
+    await killExistingDebugChrome();
     
     const isWindows = process.platform === 'win32';
     const isMac = process.platform === 'darwin';
