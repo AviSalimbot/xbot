@@ -47,7 +47,7 @@ async function followAccounts(customThreshold = null) {
   const effectiveThreshold = customThreshold !== null ? customThreshold : config.followAccountsThreshold;
   console.log(`🎯 Using follower threshold: ${effectiveThreshold} (${customThreshold !== null ? 'custom' : 'config default'})`);
   const browser = await puppeteer.connect({
-    browserURL: 'http://localhost:9222',
+    browserURL: 'http://127.0.0.1:9222',
   });
 
   const page = await browser.newPage();

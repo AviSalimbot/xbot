@@ -62,7 +62,7 @@ async function analyzeTweet(tweetText) {
 
 async function scrapeTweets(topicConfig) {
   const browser = await puppeteer.connect({
-    browserURL: 'http://localhost:9222',
+    browserURL: 'http://127.0.0.1:9222',
   });
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
