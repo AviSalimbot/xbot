@@ -4,6 +4,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const { spawn, exec } = require('child_process');
+const fs = require('fs');
 
 // Import routes
 const searchRoute = require('./routes/search');
@@ -289,6 +290,37 @@ app.get('/get-current-topic', (req, res) => {
     res.json({ success: true, topic: topic });
   } else {
     res.json({ success: false, message: 'No topic set' });
+  }
+});
+
+// Get available topics endpoint
+app.get('/get-available-topics', (req, res) => {
+  try {
+    const configPath = path.join(__dirname, 'config.json');
+    
+    if (!fs.existsSync(configPath)) {
+      return res.json({
+        success: false,
+        message: 'Config file not found'
+      });
+    }
+    
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const topics = Object.keys(config).map(key => ({
+      key: key,
+      name: config[key].name
+    }));
+    
+    res.json({
+      success: true,
+      topics: topics
+    });
+  } catch (error) {
+    console.error('Error loading topics:', error);
+    res.json({
+      success: false,
+      message: 'Error loading topics from config'
+    });
   }
 });
 
