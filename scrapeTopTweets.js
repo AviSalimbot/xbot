@@ -19,7 +19,7 @@ async function scrapeTopTweets() {
     while (retries > 0) {
       try {
         browser = await puppeteer.connect({
-          browserURL: 'http://localhost:9222',
+          browserURL: 'http://127.0.0.1:9222',
         });
         break;
       } catch (connectError) {

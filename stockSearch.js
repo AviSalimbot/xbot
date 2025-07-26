@@ -53,7 +53,7 @@ async function searchStockTickers(ticker = null, minFollowers = 5000) {
         
         // Scroll to load more tweets
         console.log('📜 Scrolling to load more tweets...');
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 10; i++) {
             await page.evaluate(() => window.scrollBy(0, window.innerHeight));
             await delay(2000);
         }
@@ -121,7 +121,7 @@ async function searchStockTickers(ticker = null, minFollowers = 5000) {
         
         const userFollowerCounts = {};
         
-        for (const username of uniqueUsers.slice(0, 10)) { // Limit to first 10 users to avoid rate limits
+        for (const username of uniqueUsers.slice(0, 50)) { // Limit to first 10 users to avoid rate limits
             try {
                 console.log(`👤 Checking followers for @${username}...`);
                 await page.goto(`https://x.com/${username}`, {

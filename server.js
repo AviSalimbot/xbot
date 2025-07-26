@@ -15,10 +15,33 @@ const topicAssociationRouter = require('./routes/topicAssociation');
 
 const app = express();
 
+// Function to kill existing Chrome processes (Windows-specific)
+async function killExistingChrome() {
+  return new Promise((resolve) => {
+    if (process.platform === 'win32') {
+      console.log('🔧 Killing existing Chrome processes...');
+      exec('taskkill /f /im chrome.exe', (error) => {
+        if (error) {
+          console.log('ℹ️ No existing Chrome processes found or already killed');
+        } else {
+          console.log('✅ Killed existing Chrome processes');
+        }
+        // Wait a moment for processes to fully terminate
+        setTimeout(resolve, 2000);
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
 // Function to start Chrome with remote debugging (cross-platform)
 async function startChrome() {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     console.log('🚀 Starting Google Chrome with remote debugging...');
+    
+    // Kill existing Chrome processes first
+    await killExistingChrome();
     
     const isWindows = process.platform === 'win32';
     const isMac = process.platform === 'darwin';
@@ -48,7 +71,18 @@ async function startChrome() {
         '--remote-debugging-port=9222',
         `--user-data-dir=${userDataDir}`,
         '--no-first-run',
-        '--no-default-browser-check'
+        '--no-default-browser-check',
+        '--disable-web-security',
+        '--disable-extensions',
+        '--disable-plugins',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--disable-dev-shm-usage',
+        '--no-sandbox',
+        '--disable-setuid-sandbox'
       ];
     } else if (isMac) {
       // macOS
@@ -98,27 +132,56 @@ async function startChrome() {
       setTimeout(() => {
         // Check if Chrome is ready (cross-platform)
         let chromeReady = false;
+        let attempts = 0;
+        const maxAttempts = 30;
+        
         const checkChrome = () => {
+          attempts++;
           const http = require('http');
-          const req = http.get('http://localhost:9222', (res) => {
-            if (!chromeReady) {
+          
+          console.log(`⏳ Checking Chrome readiness (attempt ${attempts}/${maxAttempts})...`);
+          
+          const req = http.get('http://127.0.0.1:9222/json/version', (res) => {
+            console.log(`📡 Chrome response status: ${res.statusCode}`);
+            if (res.statusCode === 200 && !chromeReady) {
               console.log('✅ Chrome is ready on port 9222');
               chromeReady = true;
               resolve(true);
+            } else if (!chromeReady) {
+              if (attempts >= maxAttempts) {
+                console.error('❌ Chrome failed to start after maximum attempts');
+                resolve(false);
+              } else {
+                setTimeout(checkChrome, 2000);
+              }
             }
           });
           
-          req.on('error', () => {
+          req.on('error', (error) => {
+            console.log(`❌ HTTP request error: ${error.message}`);
             if (!chromeReady) {
-              console.log('⏳ Still waiting for Chrome...');
-              setTimeout(checkChrome, 2000);
+              if (attempts >= maxAttempts) {
+                console.error('❌ Chrome failed to start after maximum attempts');
+                console.log('💡 Try manually opening Chrome and checking if port 9222 is available');
+                resolve(false);
+              } else {
+                console.log(`⏳ Still waiting for Chrome... (${attempts}/${maxAttempts})`);
+                setTimeout(checkChrome, 2000);
+              }
             }
           });
           
-          req.setTimeout(1000, () => {
+          req.setTimeout(5000, () => {
+            console.log('⏰ Request timeout');
             req.abort();
             if (!chromeReady) {
-              setTimeout(checkChrome, 2000);
+              if (attempts >= maxAttempts) {
+                console.error('❌ Chrome failed to start after maximum attempts');
+                console.log('💡 Try manually opening Chrome and checking if port 9222 is available');
+                resolve(false);
+              } else {
+                setTimeout(checkChrome, 2000);
+              }
             }
           });
         };
