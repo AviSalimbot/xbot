@@ -28,5 +28,20 @@
     "followSheet": "Basketball Follow Report",
     "targetSheet": "Relevant Tweets",
     "folder": "1E62qt4Jaz-2qsEjkFvZJ8vSfzH9qNMQo"
+  },
+  "btcs": {
+    "name": "BTCS",
+    "searchQuery": "BTCS -XRP -ADA -ICO -prize -giveaway -airdrop -air -drop -rich -win -scam -free -claim -bonus -earn -presale -whitelist -referral -rewards -lottery -jackpot -million -profit -trading -bot -pump -dump -wallet -click -link -join -moon -100x -gem -10x -20x -1000x -live -connect -#coinoxa -#yovovix -#twyae -#coinanzor -#coinfluct -#soondex -#Fextap -#Cryptorecovery -#Cryptoscam -#Cryptexar -#scam -#giveaway -#airdrop -RT -#invest -invest -doge -pepe -meme -mint -memecoin -memecoins -SHIB -#SHIB lang:en -ö -ä -ü -ß -é -è -ê -ë -ç -à -â -î -ô -û -ñ -á -í -ó -ú -å -ø -æ -ł -š -ž -č -ř -ę -ą",
+    "userSearchQuery": "BTCS",
+    "sheetPrefix": "BTCS Tweets",
+    "followersThreshold": 2000,
+    "followAccountsThreshold": 5000,
+    "statusMessages": {
+      "following": "Following BTCS accounts, please wait...",
+      "monitoring": "📊 Monitors latest 'BTCS Tweets' spreadsheet for new rows"
+    },
+    "followSheet": "BTCS Follow Report",
+    "targetSheet": "Relevant Tweets",
+    "folder": "1cdmIMIrJBanPX_HcangFBZoNBAceoJjs"
   }
 } 
