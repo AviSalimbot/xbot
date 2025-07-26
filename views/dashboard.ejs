@@ -91,8 +91,6 @@
 						<label for="topicSelect">Select Topic:</label>
 						<select id="topicSelect" onchange="setTopic()">
 							<option value="" disabled selected>Choose a topic...</option>
-							<option value="ethereum">Ethereum</option>
-							<option value="basketball">Basketball</option>
 						</select>
 					</div>
 					<div class="follower-filter" id="followerFilter" style="display: none;">
@@ -282,6 +280,9 @@
 		window.addEventListener('DOMContentLoaded', async () => {
 			activateSidebarItem('home');
 			
+			// Load available topics from config
+			await loadAvailableTopics();
+			
 			// Check if a topic is already set in the session
 			try {
 				const response = await fetch('/get-current-topic');
@@ -309,6 +310,35 @@
 				updateFollowAccountsButton(false);
 			}
 		});
+
+		// Function to load available topics from config
+		async function loadAvailableTopics() {
+			try {
+				const response = await fetch('/get-available-topics');
+				const data = await response.json();
+				
+				if (data.success && data.topics) {
+					const topicSelect = document.getElementById('topicSelect');
+					
+					// Clear existing options except the first one
+					topicSelect.innerHTML = '<option value="" disabled selected>Choose a topic...</option>';
+					
+					// Add topics from config
+					data.topics.forEach(topic => {
+						const option = document.createElement('option');
+						option.value = topic.key;
+						option.textContent = topic.name;
+						topicSelect.appendChild(option);
+					});
+					
+					console.log('Loaded topics:', data.topics);
+				} else {
+					console.error('Failed to load topics:', data.message);
+				}
+			} catch (err) {
+				console.error('Error loading topics:', err);
+			}
+		}
 
 		// Function to activate sidebar item
 		function activateSidebarItem(action) {

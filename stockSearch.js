@@ -1,5 +1,8 @@
 require('dotenv').config();
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -10,6 +13,7 @@ async function searchStockTickers(ticker = null, minFollowers = 5000) {
     try {
         console.log(`🔍 Starting stock ticker search${ticker ? ` for ${ticker}` : ''}...`);
         console.log(`👥 Minimum followers: ${minFollowers}`);
+        console.log(`💻 Operating System: ${os.platform()}`);
         
         // Connect to existing Chrome instance on port 9222 (Windows compatible)
         browser = await puppeteer.connect({
@@ -32,17 +36,26 @@ async function searchStockTickers(ticker = null, minFollowers = 5000) {
             // Search for specific ticker
             searchQuery += ` ${ticker}`;
         } else {
-            // Search for general stock patterns - any $ followed by 4 letters
-            searchQuery += ' ($AAPL OR $TSLA OR $NVDA OR $MSFT OR $GOOGL OR $AMZN OR $META OR $NFLX)';
+            // Load popular tickers from JSON file
+            const tickersPath = path.join(__dirname, 'stock-tickers.json');
+            const tickersData = JSON.parse(fs.readFileSync(tickersPath, 'utf8'));
+            const tickerList = tickersData.popularTickers.map(t => `$${t}`).join(' OR ');
+            searchQuery += ` (${tickerList})`;
         }
         
         console.log(`🔍 Search query: ${searchQuery}`);
         
+        // Determine search filter based on OS
+        const isWindows = os.platform() === 'win32';
+        const searchFilter = isWindows ? 'top' : 'live';
+        console.log(`🎛️ Using search filter: ${searchFilter} (${isWindows ? 'Windows' : 'Mac/Linux'})`);
+        
         // Navigate to X.com search
         const encodedQuery = encodeURIComponent(searchQuery);
-        const searchUrl = `https://x.com/search?q=${encodedQuery}&src=typed_query&f=live`;
+        const searchUrl = `https://x.com/search?q=${encodedQuery}&src=typed_query&f=${searchFilter}`;
         
         console.log('🌐 Navigating to X.com search...');
+        console.log(`🔗 URL: ${searchUrl}`);
         await page.goto(searchUrl, {
             waitUntil: 'networkidle2',
             timeout: 60000
@@ -121,7 +134,7 @@ async function searchStockTickers(ticker = null, minFollowers = 5000) {
         
         const userFollowerCounts = {};
         
-        for (const username of uniqueUsers.slice(0, 50)) { // Limit to first 10 users to avoid rate limits
+        for (const username of uniqueUsers.slice(0, 50)) { // Limit to first 50 users
             try {
                 console.log(`👤 Checking followers for @${username}...`);
                 await page.goto(`https://x.com/${username}`, {
@@ -170,6 +183,8 @@ async function searchStockTickers(ticker = null, minFollowers = 5000) {
             success: true,
             tweets: filteredTweets,
             searchQuery: searchQuery,
+            searchFilter: searchFilter,
+            platform: os.platform(),
             totalFound: tweets.length,
             filteredCount: filteredTweets.length,
             minFollowers: minFollowers
