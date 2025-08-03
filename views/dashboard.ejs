@@ -156,6 +156,15 @@
 			
 			selectedTopic = topicSelect.value;
 			
+			// Check if "Add Environment" was selected
+			if (selectedTopic === 'add-environment') {
+				showAddEnvironmentModal();
+				// Reset dropdown to empty selection
+				topicSelect.value = '';
+				selectedTopic = null;
+				return;
+			}
+			
 			if (selectedTopic) {
 				welcomeText.textContent = `Topic set to ${topicSelect.options[topicSelect.selectedIndex].text}. Set follower filter and choose an action below:`;
 				welcomeOptions.style.display = 'flex';
@@ -330,6 +339,14 @@
 						option.textContent = topic.name;
 						topicSelect.appendChild(option);
 					});
+					
+					// Add "Add Environment" option
+					const addEnvOption = document.createElement('option');
+					addEnvOption.value = 'add-environment';
+					addEnvOption.textContent = '+ Add Environment';
+					addEnvOption.style.fontWeight = 'bold';
+					addEnvOption.style.color = '#007bff';
+					topicSelect.appendChild(addEnvOption);
 					
 					console.log('Loaded topics:', data.topics);
 				} else {
@@ -1098,6 +1115,775 @@
 			`;
 			
 			suggestionsContainer.style.display = 'block';
+		}
+
+		// Add Environment Modal Functions
+		function showAddEnvironmentModal() {
+			// Create modal HTML
+			const modal = document.createElement('div');
+			modal.id = 'addEnvironmentModal';
+			modal.className = 'modal-overlay';
+			modal.innerHTML = `
+				<div class="modal-content">
+					<div class="modal-header">
+						<h2>Add New Environment</h2>
+						<button class="close-modal" onclick="closeAddEnvironmentModal()">&times;</button>
+					</div>
+					<div class="modal-body">
+						<form id="addEnvironmentForm">
+							<div class="form-group">
+								<label for="envKey">Environment Key:</label>
+								<input type="text" id="envKey" placeholder="e.g., bitcoin, stocks, crypto" required>
+								<small>Lowercase, no spaces. Used internally as identifier.</small>
+							</div>
+							
+							<div class="form-group">
+								<label for="envName">Display Name:</label>
+								<input type="text" id="envName" placeholder="e.g., Bitcoin, Stock Market, Cryptocurrency" required>
+								<small>Human-readable name shown in the dropdown.</small>
+							</div>
+							
+							<div class="form-group">
+								<label for="searchQuery">Twitter Search Query:</label>
+								<input type="text" id="searchQuery" placeholder="e.g., bitcoin -scam -giveaway -pump -dump" required>
+								<small>Twitter search terms with filters to exclude spam.</small>
+							</div>
+							
+							<div class="form-group">
+								<label for="followersThreshold">Followers Threshold:</label>
+								<input type="number" id="followersThreshold" value="2000" min="0" step="100" required>
+								<small>Minimum follower count for analysis.</small>
+							</div>
+							
+							<div class="form-group">
+								<label for="followAccountsThreshold">Follow Accounts Threshold:</label>
+								<input type="number" id="followAccountsThreshold" value="5000" min="0" step="100" required>
+								<small>Minimum follower count to follow accounts.</small>
+							</div>
+							
+							
+							<div class="chrome-detection" id="chromeDetection" style="display: none;">
+								<h4>Chrome Instance Selection</h4>
+								<div id="chromeInstances"></div>
+							</div>
+							
+							<div class="automation-progress" id="automationProgress" style="display: none;">
+								<h4>Automation Progress</h4>
+								<div class="progress-steps">
+									<div class="progress-step" id="step-chrome">
+										<i class='bx bx-loader bx-spin'></i>
+										<span>Authenticating with APIs...</span>
+									</div>
+									<div class="progress-step" id="step-folder">
+										<i class='bx bx-loader bx-spin'></i>
+										<span>Creating Google Drive folder...</span>
+									</div>
+									<div class="progress-step" id="step-sheets">
+										<i class='bx bx-loader bx-spin'></i>
+										<span>Creating Google Sheets...</span>
+									</div>
+									<div class="progress-step" id="step-discord">
+										<i class='bx bx-loader bx-spin'></i>
+										<span>Creating Discord channel via API...</span>
+									</div>
+									<div class="progress-step" id="step-config">
+										<i class='bx bx-loader bx-spin'></i>
+										<span>Updating configuration...</span>
+									</div>
+								</div>
+							</div>
+							
+							<div class="ifttt-instructions" id="iftttInstructions" style="display: none;">
+								<h4>Manual Setup Required</h4>
+								<div class="manual-steps" id="manualSheetSteps" style="display: none;">
+									<div class="manual-step">
+										<h5>📊 Google Sheets Creation</h5>
+										<p><strong>A Chrome window opened to your folder. Please create these 2 sheets:</strong></p>
+										<ol>
+											<li><strong>Relevant Tweets</strong> - Add headers: Date, Username, Tweet, URL, Followers</li>
+											<li><strong><span id="followReportSheetName"></span> Follow Report</strong> - Add headers: Date, Username, Profile URL, Followers, Following, Status</li>
+										</ol>
+									</div>
+								</div>
+								<p>IFTTT applets cannot be created automatically. Please create these manually:</p>
+								<div class="ifttt-steps">
+									<div class="ifttt-step">
+										<h5>1. New Tweets Applet</h5>
+										<p><strong>Trigger:</strong> Twitter - New tweets by search</p>
+										<p><strong>Search term:</strong> <span id="iftttSearchQuery"></span></p>
+										<p><strong>Action:</strong> Google Sheets - Add row to spreadsheet</p>
+										<p><strong>Spreadsheet:</strong> <span id="iftttSheetName"></span></p>
+									</div>
+									<div class="ifttt-step">
+										<h5>2. Relevant Tweets to Discord</h5>
+										<p><strong>Trigger:</strong> Google Sheets - New row added</p>
+										<p><strong>Spreadsheet:</strong> Relevant Tweets</p>
+										<p><strong>Action:</strong> Discord - Post message to channel</p>
+										<p><strong>Channel:</strong> <span id="iftttDiscordChannel"></span></p>
+									</div>
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn-secondary" onclick="closeAddEnvironmentModal()">Cancel</button>
+						<button type="button" class="btn-primary" onclick="startEnvironmentCreation()">Create Environment</button>
+					</div>
+				</div>
+			`;
+			
+			document.body.appendChild(modal);
+			
+			// Add modal-open class to sidebar to disable it
+			document.getElementById('sidebar').classList.add('modal-open');
+			
+			// Add modal styles
+			if (!document.getElementById('modalStyles')) {
+				const styles = document.createElement('style');
+				styles.id = 'modalStyles';
+				styles.textContent = `
+					.modal-overlay {
+						position: fixed;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						background: rgba(0, 0, 0, 0.7);
+						display: flex;
+						justify-content: center;
+						align-items: center;
+						z-index: 1000;
+					}
+					
+					.modal-overlay::before {
+						content: '';
+						position: absolute;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						background: rgba(0, 0, 0, 0.5);
+						z-index: -1;
+					}
+					
+					#sidebar.modal-open {
+						pointer-events: none;
+						opacity: 0.3;
+						z-index: 1;
+					}
+					
+					.modal-content {
+						background: var(--light);
+						border-radius: 8px;
+						max-width: 600px;
+						width: 90%;
+						max-height: 90vh;
+						overflow-y: auto;
+						box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+					}
+					
+					.modal-header {
+						padding: 20px;
+						border-bottom: 1px solid var(--grey);
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+					}
+					
+					.modal-header h2 {
+						margin: 0;
+						color: var(--dark);
+					}
+					
+					.close-modal {
+						background: none;
+						border: none;
+						font-size: 24px;
+						cursor: pointer;
+						color: var(--dark-grey);
+						padding: 0;
+						width: 30px;
+						height: 30px;
+						display: flex;
+						align-items: center;
+						justify-content: center;
+					}
+					
+					.close-modal:hover {
+						color: var(--red);
+					}
+					
+					.modal-body {
+						padding: 20px;
+					}
+					
+					.form-group {
+						margin-bottom: 20px;
+					}
+					
+					.form-group label {
+						display: block;
+						margin-bottom: 5px;
+						font-weight: bold;
+						color: var(--dark);
+					}
+					
+					.form-group input, .form-group select {
+						width: 100%;
+						padding: 10px;
+						border: 1px solid var(--grey);
+						border-radius: 4px;
+						font-size: 14px;
+					}
+					
+					.form-group small {
+						display: block;
+						margin-top: 5px;
+						color: var(--dark-grey);
+						font-size: 12px;
+					}
+					
+					.modal-footer {
+						padding: 20px;
+						border-top: 1px solid var(--grey);
+						display: flex;
+						justify-content: flex-end;
+						gap: 10px;
+					}
+					
+					.btn-primary, .btn-secondary {
+						padding: 10px 20px;
+						border: none;
+						border-radius: 4px;
+						cursor: pointer;
+						font-size: 14px;
+					}
+					
+					.btn-primary {
+						background: var(--blue);
+						color: white;
+					}
+					
+					.btn-primary:hover {
+						background: #0056b3;
+						color: white;
+					}
+					
+					.btn-secondary {
+						background: var(--grey);
+						color: var(--dark);
+					}
+					
+					.btn-secondary:hover {
+						background: var(--dark-grey);
+						color: white;
+					}
+					
+					.chrome-detection {
+						margin: 20px 0;
+						padding: 15px;
+						background: var(--light-grey);
+						border-radius: 4px;
+					}
+					
+					.chrome-instance {
+						padding: 10px;
+						margin: 5px 0;
+						border: 1px solid var(--grey);
+						border-radius: 4px;
+						cursor: pointer;
+					}
+					
+					.chrome-instance:hover {
+						background: var(--blue);
+						color: white;
+					}
+					
+					.environment-success {
+						text-align: center;
+					}
+					
+					.success-header {
+						margin-bottom: 30px;
+					}
+					
+					.success-icon {
+						font-size: 48px;
+						color: #28a745;
+						margin-bottom: 15px;
+					}
+					
+					.success-header h3 {
+						color: #28a745;
+						margin-bottom: 15px;
+					}
+					
+					.folder-info {
+						background: #f8f9fa;
+						padding: 15px;
+						border-radius: 8px;
+						border-left: 4px solid #28a745;
+					}
+					
+					.url-copy-section {
+						display: flex;
+						gap: 10px;
+						margin: 10px 0;
+						align-items: center;
+					}
+					
+					.url-input {
+						flex: 1;
+						padding: 8px 12px;
+						border: 1px solid #ddd;
+						border-radius: 4px;
+						font-size: 14px;
+						background: #f8f9fa;
+					}
+					
+					.copy-btn {
+						padding: 8px 16px;
+						background: var(--blue);
+						color: white;
+						border: none;
+						border-radius: 4px;
+						cursor: pointer;
+						font-size: 14px;
+						display: flex;
+						align-items: center;
+						gap: 5px;
+						transition: background 0.3s;
+					}
+					
+					.copy-btn:hover {
+						background: #0056b3;
+					}
+					
+					.copy-btn i {
+						font-size: 16px;
+					}
+					
+					.manual-checklist {
+						text-align: left;
+						margin-top: 20px;
+					}
+					
+					.checklist-section {
+						margin-bottom: 25px;
+						padding: 15px;
+						background: #f8f9fa;
+						border-radius: 8px;
+						border-left: 4px solid var(--blue);
+					}
+					
+					.checklist-section h5 {
+						margin-bottom: 15px;
+						color: var(--dark);
+						font-size: 16px;
+					}
+					
+					.checklist-item {
+						display: flex;
+						align-items: center;
+						margin-bottom: 10px;
+						padding: 8px;
+						background: white;
+						border-radius: 4px;
+					}
+					
+					.checklist-item input[type="checkbox"] {
+						margin-right: 10px;
+						transform: scale(1.2);
+					}
+					
+					.checklist-item label {
+						cursor: pointer;
+						flex-grow: 1;
+						font-weight: normal;
+					}
+					
+					.checklist-note {
+						margin-top: 10px;
+						padding: 8px;
+						background: #e3f2fd;
+						border-radius: 4px;
+					}
+					
+					.checklist-note a {
+						color: var(--blue);
+						text-decoration: none;
+					}
+					
+					.checklist-note a:hover {
+						text-decoration: underline;
+					}
+					
+					.warning-section {
+						margin-top: 30px;
+						padding: 15px;
+						background: #fff3cd;
+						border-left: 4px solid #ffc107;
+						border-radius: 8px;
+					}
+					
+					.warning-box {
+						display: flex;
+						align-items: center;
+						margin-bottom: 15px;
+						padding: 10px;
+						background: #f8d7da;
+						border-radius: 4px;
+						border-left: 4px solid #dc3545;
+					}
+					
+					.warning-icon {
+						font-size: 24px;
+						color: #dc3545;
+						margin-right: 10px;
+					}
+					
+					.warning-box p {
+						margin: 0;
+						color: #721c24;
+						font-weight: bold;
+					}
+					
+					.waiver-item {
+						display: flex;
+						align-items: center;
+						padding: 12px;
+						background: white;
+						border-radius: 4px;
+						border: 2px solid #ffc107;
+					}
+					
+					.waiver-item input[type="checkbox"] {
+						margin-right: 12px;
+						transform: scale(1.3);
+					}
+					
+					.waiver-item label {
+						cursor: pointer;
+						font-weight: bold;
+						color: #856404;
+					}
+					
+					.btn-primary:disabled {
+						background: #6c757d !important;
+						cursor: not-allowed !important;
+						opacity: 0.6;
+					}
+					
+					.btn-primary:disabled:hover {
+						background: #6c757d !important;
+					}
+					
+					.chrome-instance.selected {
+						background: var(--blue);
+						color: white;
+					}
+					
+					.automation-progress {
+						margin: 20px 0;
+						padding: 15px;
+						background: var(--light-grey);
+						border-radius: 4px;
+					}
+					
+					.progress-steps {
+						display: flex;
+						flex-direction: column;
+						gap: 10px;
+					}
+					
+					.progress-step {
+						display: flex;
+						align-items: center;
+						gap: 10px;
+						padding: 10px;
+					}
+					
+					.progress-step.completed {
+						color: var(--green);
+					}
+					
+					.progress-step.error {
+						color: var(--red);
+					}
+					
+					.ifttt-instructions {
+						margin: 20px 0;
+						padding: 15px;
+						background: var(--yellow);
+						border-radius: 4px;
+					}
+					
+					.ifttt-steps {
+						margin-top: 15px;
+					}
+					
+					.ifttt-step {
+						margin-bottom: 15px;
+						padding: 10px;
+						background: white;
+						border-radius: 4px;
+					}
+					
+					.ifttt-step h5 {
+						margin: 0 0 10px 0;
+						color: var(--dark);
+					}
+					
+					.ifttt-step p {
+						margin: 5px 0;
+						font-size: 14px;
+					}
+					
+					.ifttt-step span {
+						font-weight: bold;
+						color: var(--blue);
+					}
+				`;
+				document.head.appendChild(styles);
+			}
+		}
+		
+		function closeAddEnvironmentModal() {
+			const modal = document.getElementById('addEnvironmentModal');
+			if (modal) {
+				modal.remove();
+			}
+			
+			// Remove modal-open class from sidebar to re-enable it
+			document.getElementById('sidebar').classList.remove('modal-open');
+		}
+		
+		async function startEnvironmentCreation() {
+			const form = document.getElementById('addEnvironmentForm');
+			const formData = new FormData(form);
+			
+			// Validate form
+			const envKey = document.getElementById('envKey').value.trim();
+			const envName = document.getElementById('envName').value.trim();
+			const searchQuery = document.getElementById('searchQuery').value.trim();
+			const followersThreshold = document.getElementById('followersThreshold').value;
+			const followAccountsThreshold = document.getElementById('followAccountsThreshold').value;
+			const discordChannelName = envKey; // Use environment key as Discord channel name
+			
+			if (!envKey || !envName || !searchQuery || !followersThreshold || !followAccountsThreshold) {
+				alert('Please fill in all required fields.');
+				return;
+			}
+			
+			// Validate environment key format
+			if (!/^[a-z0-9_-]+$/.test(envKey)) {
+				alert('Environment key must be lowercase letters, numbers, hyphens, or underscores only.');
+				return;
+			}
+			
+			// Hide form and show progress
+			document.querySelector('.modal-body form').style.display = 'none';
+			document.getElementById('automationProgress').style.display = 'block';
+			document.querySelector('.btn-primary').style.display = 'none';
+			
+			try {
+				// Call backend API to start automation
+				const response = await fetch('/create-environment', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						envKey,
+						envName,
+						searchQuery,
+						followersThreshold: parseInt(followersThreshold),
+						followAccountsThreshold: parseInt(followAccountsThreshold),
+						discordChannelName
+					})
+				});
+				
+				const result = await response.json();
+				
+				if (result.success) {
+					// Hide progress and show manual checklist
+					document.getElementById('automationProgress').style.display = 'none';
+					
+					// Show success message and manual checklist
+					document.querySelector('.modal-body').innerHTML = `
+						<div class="environment-success">
+							<div class="success-header">
+								<i class='bx bx-check-circle success-icon'></i>
+								<h3>Environment Created Successfully!</h3>
+								<div class="folder-info">
+									<p>📁 Google Drive folder created: <strong>${result.envName}</strong></p>
+									<div class="url-copy-section">
+										<input type="text" id="folderUrl" value="${result.folderUrl}" readonly class="url-input">
+										<button type="button" class="copy-btn" onclick="copyFolderUrl()">
+											<i class='bx bx-copy'></i> Copy Link
+										</button>
+									</div>
+									<small>💡 Copy the link above and open it manually in your Chrome with logged profile</small>
+								</div>
+							</div>
+							
+							<div class="manual-checklist">
+								<h4>📋 Complete these manual steps:</h4>
+								
+								<div class="checklist-section">
+									<h5>📊 GOOGLE SHEETS</h5>
+									<div class="checklist-item">
+										<input type="checkbox" id="sheet1" onchange="checkAllCompleted()" />
+										<label for="sheet1">Create "Relevant Tweets" sheet</label>
+									</div>
+									<div class="checklist-item">
+										<input type="checkbox" id="sheet2" onchange="checkAllCompleted()" />
+										<label for="sheet2">Create "${result.envName} Follow Report" sheet</label>
+									</div>
+									<div class="checklist-note">
+										<small>💡 Copy the folder link above and open in your Chrome, then click "New" → "Google Sheets"</small>
+									</div>
+								</div>
+								
+								<div class="checklist-section">
+									<h5>💬 DISCORD</h5>
+									<div class="checklist-item">
+										<input type="checkbox" id="discord1" onchange="checkAllCompleted()" />
+										<label for="discord1">Create channel "${result.discordChannelName}" in Discord server</label>
+									</div>
+								</div>
+								
+								<div class="checklist-section">
+									<h5>🔗 IFTTT</h5>
+									<div class="checklist-item">
+										<input type="checkbox" id="ifttt0" onchange="checkAllCompleted()" />
+										<label for="ifttt0">Reconnect Discord account to IFTTT</label>
+									</div>
+									<div class="checklist-item">
+										<input type="checkbox" id="ifttt1" onchange="checkAllCompleted()" />
+										<label for="ifttt1">Create "New ${result.envName} Tweets" applet in IFTTT</label>
+									</div>
+									<div class="checklist-item">
+										<input type="checkbox" id="ifttt2" onchange="checkAllCompleted()" />
+										<label for="ifttt2">Create "Relevant ${result.envName} Tweets" applet in IFTTT</label>
+									</div>
+									<div class="checklist-note">
+										<small>💡 Go to ifttt.com/create to set up applets</small>
+									</div>
+								</div>
+								
+								<div class="warning-section">
+									<div class="warning-box">
+										<i class='bx bx-error-circle warning-icon'></i>
+										<p><strong>⚠️ Warning:</strong> Incomplete setup leads to errors</p>
+									</div>
+									<div class="waiver-item">
+										<input type="checkbox" id="waiver" onchange="checkAllCompleted()" />
+										<label for="waiver">I memorize the steps and will be sure to do it. Enable finish button</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					`;
+					
+					// Add close button (initially disabled)
+					document.querySelector('.modal-footer').innerHTML = `
+						<button type="button" id="finishBtn" class="btn-primary" onclick="finishEnvironmentCreation()" disabled>Finish</button>
+					`;
+					
+				} else {
+					alert('Error creating environment: ' + result.message);
+					// Reset form
+					document.querySelector('.modal-body form').style.display = 'block';
+					document.getElementById('automationProgress').style.display = 'none';
+					document.querySelector('.btn-primary').style.display = 'inline-block';
+				}
+				
+			} catch (error) {
+				alert('Error creating environment: ' + error.message);
+				// Reset form
+				document.querySelector('.modal-body form').style.display = 'block';
+				document.getElementById('automationProgress').style.display = 'none';
+				document.querySelector('.btn-primary').style.display = 'inline-block';
+			}
+		}
+		
+		function copyFolderUrl() {
+			const urlInput = document.getElementById('folderUrl');
+			urlInput.select();
+			urlInput.setSelectionRange(0, 99999); // For mobile devices
+			
+			try {
+				document.execCommand('copy');
+				const copyBtn = document.querySelector('.copy-btn');
+				const originalText = copyBtn.innerHTML;
+				copyBtn.innerHTML = '<i class="bx bx-check"></i> Copied!';
+				copyBtn.style.background = '#28a745';
+				
+				setTimeout(() => {
+					copyBtn.innerHTML = originalText;
+					copyBtn.style.background = '';
+				}, 2000);
+			} catch (err) {
+				alert('Failed to copy URL. Please copy manually.');
+			}
+		}
+		
+		function checkAllCompleted() {
+			const taskCheckboxes = ['sheet1', 'sheet2', 'discord1', 'ifttt0', 'ifttt1', 'ifttt2'];
+			const waiverCheckbox = document.getElementById('waiver');
+			const finishBtn = document.getElementById('finishBtn');
+			
+			// Check if all task checkboxes are checked
+			const allTasksChecked = taskCheckboxes.every(id => {
+				const checkbox = document.getElementById(id);
+				return checkbox && checkbox.checked;
+			});
+			
+			// Check if waiver is checked
+			const waiverChecked = waiverCheckbox && waiverCheckbox.checked;
+			
+			// Enable button if either:
+			// 1. Waiver is checked (regardless of tasks), OR
+			// 2. All tasks are checked (regardless of waiver)
+			const shouldEnable = waiverChecked || allTasksChecked;
+			
+			if (finishBtn) {
+				finishBtn.disabled = !shouldEnable;
+				if (shouldEnable) {
+					finishBtn.style.background = '#28a745';
+					finishBtn.style.cursor = 'pointer';
+				} else {
+					finishBtn.style.background = '';
+					finishBtn.style.cursor = 'not-allowed';
+				}
+			}
+		}
+
+		function updateProgressStep(stepId, status, message) {
+			const step = document.getElementById(stepId);
+			const icon = step.querySelector('i');
+			const text = step.querySelector('span');
+			
+			step.className = `progress-step ${status}`;
+			
+			if (status === 'completed') {
+				icon.className = 'bx bx-check';
+			} else if (status === 'error') {
+				icon.className = 'bx bx-x';
+			}
+			
+			text.textContent = message;
+		}
+		
+		function finishEnvironmentCreation() {
+			closeAddEnvironmentModal();
+			// Reload available topics to include the new environment
+			loadAvailableTopics();
+			// Show success message
+			statusDiv.textContent = 'Environment created successfully! Please complete IFTTT setup manually.';
+			statusDiv.className = 'status-message status-success';
+			statusDiv.style.display = '';
 		}
 	</script>
 </body>

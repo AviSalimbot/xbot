@@ -13,6 +13,7 @@ const engagersRoute = require('./routes/engagers');
 const followRouter = require('./routes/follow');
 const monitorRouter = require('./routes/monitor');
 const topicAssociationRouter = require('./routes/topicAssociation');
+const EnvironmentAutomation = require('./environmentAutomation');
 
 const app = express();
 
@@ -365,6 +366,82 @@ app.use('/my-engagers', engagersRoute);
 app.use('/follow', topicMiddleware, followRouter);
 app.use('/monitor', topicMiddleware, monitorRouter);
 app.use('/topic-association', topicMiddleware, topicAssociationRouter);
+
+// Create Environment endpoint
+app.post('/create-environment', async (req, res) => {
+  try {
+    const { envKey, envName, searchQuery, followersThreshold, followAccountsThreshold } = req.body;
+    
+    // Validate input - all fields are required
+    if (!envKey || !envName || !searchQuery || !followersThreshold || !followAccountsThreshold) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required fields' 
+      });
+    }
+    
+    // Use envKey as discord channel name
+    const finalDiscordChannelName = envKey;
+    
+    // Check if environment key already exists
+    const configPath = path.join(__dirname, 'config.json');
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      if (config[envKey]) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Environment key already exists' 
+        });
+      }
+    }
+    
+    // Create environment automation instance
+    const automation = new EnvironmentAutomation();
+    
+    // Prepare environment data
+    const envData = {
+      envKey,
+      envName,
+      searchQuery,
+      followersThreshold,
+      followAccountsThreshold,
+      discordChannelName: finalDiscordChannelName
+    };
+    
+    // Run automation
+    const result = await automation.createEnvironment(envData);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Environment created successfully',
+        folderId: result.folderId,
+        folderUrl: result.folderUrl,
+        envName: result.envName,
+        discordChannelName: result.discordChannelName,
+        sheets: result.sheets,
+        sheetsCreated: result.sheetsCreated,
+        chromeOpened: result.chromeOpened,
+        discord: result.discord,
+        applets: result.applets,
+        manualStepsRequired: result.manualStepsRequired,
+        manualChecklist: result.manualChecklist
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to create environment'
+      });
+    }
+    
+  } catch (error) {
+    console.error('Environment creation error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error'
+    });
+  }
+});
 
 // Server start
 const PORT = process.env.PORT || 3000;
