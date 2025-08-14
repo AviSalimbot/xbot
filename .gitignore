@@ -1,1 +1,7 @@
 .env
+service-account-key*.json
+
+# Dynamic monitoring files
+*_monitor.log
+.*_last_row.txt
+.*_last_sheet_id.txt

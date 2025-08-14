@@ -132,22 +132,33 @@ function Start-Monitoring {
     Start-SleepPrevention
     
     try {
-        # Prepare environment variables
-        $envVars = @{
-            "TOPIC" = $TOPIC
-        }
+        # Set environment variables for the current session
+        $env:TOPIC = $TOPIC
         if ($env:FOLLOWER_OVERRIDE) {
-            $envVars["FOLLOWER_OVERRIDE"] = $env:FOLLOWER_OVERRIDE
+            $env:FOLLOWER_OVERRIDE = $env:FOLLOWER_OVERRIDE
         }
         
-        # Start the monitoring script in background using Start-Process
-        $process = Start-Process -FilePath "node" -ArgumentList "monitorRelevantTweets.js" -WorkingDirectory $SCRIPT_DIR -WindowStyle Hidden -PassThru -Environment $envVars
+        # Start the monitoring script in background using Start-Process with output redirection
+        $process = Start-Process -FilePath "node" -ArgumentList "monitorRelevantTweets.js" -WorkingDirectory $SCRIPT_DIR -WindowStyle Hidden -PassThru -RedirectStandardOutput $LOG_FILE -RedirectStandardError "$LOG_FILE.error"
         
-        # Save PID
-        $process.Id | Out-File $PID_FILE
+        # Save PID immediately
+        $process.Id | Out-File $PID_FILE -Encoding UTF8
+        
+        Write-Host "Process started with PID: $($process.Id)" -ForegroundColor Yellow
         
         # Wait a moment to see if it started successfully
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 3
+        
+        # Verify the process is still running
+        try {
+            $runningProcess = Get-Process -Id $process.Id -ErrorAction Stop
+            Write-Host "Process verification successful" -ForegroundColor Green
+        } catch {
+            Write-Host "Process verification failed" -ForegroundColor Red
+            Remove-Item $PID_FILE -Force -ErrorAction SilentlyContinue
+            Stop-SleepPrevention
+            return $false
+        }
         
         if (Test-MonitoringRunning) {
             Write-Host "Monitoring started successfully (PID: $($process.Id))" -ForegroundColor Green
@@ -317,14 +328,33 @@ switch ($action) {
         Start-SleepPrevention
         
         try {
-            # Start the monitoring script in background using Start-Process
-            $process = Start-Process -FilePath "node" -ArgumentList "monitorRelevantTweets.js" -WorkingDirectory $SCRIPT_DIR -WindowStyle Hidden -PassThru
+            # Set environment variables for the current session
+            $env:TOPIC = $TOPIC
+            if ($env:FOLLOWER_OVERRIDE) {
+                $env:FOLLOWER_OVERRIDE = $env:FOLLOWER_OVERRIDE
+            }
             
-            # Save PID
-            $process.Id | Out-File $PID_FILE
+            # Start the monitoring script in background using Start-Process with output redirection
+            $process = Start-Process -FilePath "node" -ArgumentList "monitorRelevantTweets.js" -WorkingDirectory $SCRIPT_DIR -WindowStyle Hidden -PassThru -RedirectStandardOutput $LOG_FILE -RedirectStandardError "$LOG_FILE.error"
+            
+            # Save PID immediately
+            $process.Id | Out-File $PID_FILE -Encoding UTF8
+            
+            Write-Host "Process started with PID: $($process.Id)" -ForegroundColor Yellow
             
             # Wait a moment to see if it started successfully
-            Start-Sleep -Seconds 2
+            Start-Sleep -Seconds 3
+            
+            # Verify the process is still running
+            try {
+                $runningProcess = Get-Process -Id $process.Id -ErrorAction Stop
+                Write-Host "Process verification successful" -ForegroundColor Green
+            } catch {
+                Write-Host "Process verification failed" -ForegroundColor Red
+                Remove-Item $PID_FILE -Force -ErrorAction SilentlyContinue
+                Stop-SleepPrevention
+                return
+            }
             
             if (Test-MonitoringRunning) {
                 Write-Host "Monitoring started successfully (PID: $($process.Id))" -ForegroundColor Green

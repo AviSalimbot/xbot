@@ -93,17 +93,30 @@ async function getMonitoringStatus() {
 
 function getMonitoringStatusSync() {
     // Check if PID file exists and process is running
-    if (!fs.existsSync(PID_FILE)) return false;
+    if (!fs.existsSync(PID_FILE)) {
+        console.log('❌ PID file not found:', PID_FILE);
+        return false;
+    }
     
     try {
         const pid = parseInt(fs.readFileSync(PID_FILE, 'utf8'), 10);
+        console.log('🔍 Checking process with PID:', pid);
+        
         // Check if process is running
         process.kill(pid, 0);
+        console.log('✅ Process is running');
         return true;
     } catch (e) {
+        console.log('❌ Process not running or error:', e.message);
         // Process not running, remove stale files
-        if (fs.existsSync(PID_FILE)) fs.unlinkSync(PID_FILE);
-        if (fs.existsSync(LOCK_FILE)) fs.unlinkSync(LOCK_FILE);
+        if (fs.existsSync(PID_FILE)) {
+            console.log('🧹 Removing stale PID file');
+            fs.unlinkSync(PID_FILE);
+        }
+        if (fs.existsSync(LOCK_FILE)) {
+            console.log('🧹 Removing stale LOCK file');
+            fs.unlinkSync(LOCK_FILE);
+        }
         return false;
     }
 }
