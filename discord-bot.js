@@ -93,6 +93,12 @@ client.on('messageCreate', async (message) => {
         return;
     }
 
+    // Check for stock search command
+    if (content.startsWith('stock search')) {
+        await handleStockSearch(message);
+        return;
+    }
+
 
 });
 
@@ -1304,49 +1310,136 @@ async function handleSuggestPost(message) {
     }
 }
 
+async function handleStockSearch(message) {
+    try {
+        const content = message.content.trim();
+        
+        // Parse command: stock search [ticker]
+        const commandText = content.substring('stock search'.length).trim();
+        
+        // Import the stock search module
+        const { searchStockTickers, searchSpecificTicker } = require('./stockSearch');
+        
+        let ticker = null;
+        let minFollowers = 5000; // Default minimum followers
+        
+        if (commandText) {
+            // Extract ticker if provided (handle both $TICKER and TICKER formats)
+            const tickerMatch = commandText.match(/\$?([A-Z]{2,5})/);
+            if (tickerMatch) {
+                ticker = '$' + tickerMatch[1];
+            }
+        }
+        
+        await message.reply(`🔍 Searching Twitter for stock ticker threads${ticker ? ` about ${ticker}` : ''}...\n👥 Filtering for users with ${minFollowers}+ followers\n⏳ This may take a moment...`);
+        
+        let result;
+        if (ticker) {
+            result = await searchSpecificTicker(ticker, minFollowers);
+        } else {
+            result = await searchStockTickers(null, minFollowers);
+        }
+        
+        if (!result.success) {
+            await message.channel.send(`❌ **Error:** ${result.error}`);
+            return;
+        }
+        
+        if (result.tweets.length === 0) {
+            let noResultsMsg = `📊 **No Results Found**\n\n`;
+            noResultsMsg += `**Search:** ${result.searchQuery}\n`;
+            noResultsMsg += `**Total tweets found:** ${result.totalFound || 0}\n`;
+            noResultsMsg += `**After follower filter (${minFollowers}+):** 0\n\n`;
+            noResultsMsg += `💡 Try:\n• Searching for a different ticker\n• Lowering the follower requirement\n• Searching during market hours for more activity`;
+            
+            await message.channel.send(noResultsMsg);
+            return;
+        }
+        
+        // Format and send results
+        let response = `📊 **Stock Ticker Thread Results**\n\n`;
+        response += `**Search:** ${result.searchQuery}\n`;
+        response += `**Found:** ${result.filteredCount} threads from users with ${minFollowers}+ followers\n`;
+        response += `**Total scanned:** ${result.totalFound} tweets\n\n`;
+        
+        await message.channel.send(response);
+        
+        // Send individual thread results (limit to top 5 to avoid spam)
+        const topTweets = result.tweets.slice(0, 5);
+        
+        for (let i = 0; i < topTweets.length; i++) {
+            const tweet = topTweets[i];
+            
+            let tweetResponse = `🧵 **Thread ${i + 1}**\n`;
+            tweetResponse += `**Author:** @${tweet.username} (${tweet.displayName})\n`;
+            tweetResponse += `**Followers:** ${tweet.followerCount.toLocaleString()}\n`;
+            tweetResponse += `**Tickers:** ${tweet.stockTickers.join(', ')}\n`;
+            tweetResponse += `**URL:** ${tweet.tweetUrl}\n\n`;
+            
+            if (tweet.timestamp) {
+                const date = new Date(tweet.timestamp);
+                tweetResponse += `\n**Posted:** ${date.toLocaleString()}`;
+            }
+            
+            await message.channel.send(tweetResponse);
+            
+            // Add delay between messages to avoid rate limits
+            if (i < topTweets.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        if (result.tweets.length > 5) {
+            await message.channel.send(`📋 **Note:** Showing top 5 results. Found ${result.tweets.length} total threads.`);
+        }
+        
+    } catch (error) {
+        console.error('Error in stock search command:', error);
+        await message.reply(`❌ Error processing stock search command: ${error.message}`);
+    }
+}
+
 
 async function handleHelp(message) {
-    const helpText = `🤖 **XBot Commands**
+    const helpText1 = `🤖 **XBot Commands**
 
 **Topic Management:**
-\`set topic <topic>\` - Set topic for this channel (e.g., \`set topic ethereum\`)
-\`get topic\` - Show current topic for this channel
-
-**Follower Management:**
-\`set follower [count]\` - Set follower threshold for monitoring
-\`set follower\` - Use config default follower count
-\`get follower\` - Show current follower threshold for this channel
+\`set topic <topic>\` - Set topic for this channel
+\`get topic\` - Show current topic
 
 **Monitoring:**
-\`start monitoring\` - Start monitoring for this channel's topic
-\`stop monitoring\` - Stop monitoring for this channel's topic
-\`status\` - Check monitoring status for this channel
-\`help monitoring\` - Show this help message
+\`start monitoring\` - Start monitoring for channel's topic
+\`stop monitoring\` - Stop monitoring for channel's topic
+\`status\` - Check monitoring status
+\`help monitoring\` - Show this help
+
+**Follower Management:**
+\`set follower [count]\` - Set follower threshold
+\`get follower\` - Show current threshold
 
 **Topic Association:**
-\`topic association "keyword" "sheetName" "range"\` - Generate keyword connections and replies from channel's topic folder
-\`connect "keyword" "tweetLink"\` - Find tweet by URL in channel's topic folder and generate connections
+\`topic association "keyword" "sheet" "range"\` - Generate connections
+\`connect "keyword" "tweetLink"\` - Find tweet and connect
 
 **Post Suggestions:**
-\`suggest post <twitter_handle>\` - Analyze user's tweets and suggest relevant posts from topic-specific trending tweets (requires channel topic)
+\`suggest post <handle>\` - Analyze tweets and suggest posts`;
+
+    const helpText2 = `**Stock Research:**
+\`stock search\` - Search ticker threads (5000+ followers)
+\`stock search <ticker>\` - Search specific ticker
 
 **Examples:**
-• \`set topic ethereum\` - Set channel topic to ethereum
-• \`set follower 5000\` - Set follower threshold to 5000
-• \`set follower\` - Use config default follower count
-• \`get follower\` - Show current follower threshold
-• \`start monitoring\` - Start monitoring for channel's topic
-• \`stop monitoring\` - Stop monitoring for channel's topic
-• \`status\` - Check status for channel's topic
-• \`get topic\` - Show current channel topic
-• \`topic association "inflation" "Relevant Tweets" "1:10"\` - Searches in channel's topic folder
-• \`connect "inflation" "https://twitter.com/user/status/1234567890"\` - Searches in channel's topic folder
-• \`suggest post elonmusk\` - Generate topic-specific suggestions (requires set topic first)
+• \`set topic ethereum\` - Set channel topic
+• \`set follower 5000\` - Set follower threshold
+• \`start monitoring\` - Start monitoring
+• \`status\` - Check status
+• \`suggest post elonmusk\` - Get suggestions
+• \`stock search BTCS\` - Find ticker threads
 
-**Legacy Support:**
-• \`set ethereum\` - Still works, equivalent to \`set topic ethereum\``;
+**Legacy:** \`set ethereum\` still works`;
 
-    await message.reply(helpText);
+    await message.reply(helpText1);
+    await message.reply(helpText2);
 }
 
 // Login to Discord with your client's token
