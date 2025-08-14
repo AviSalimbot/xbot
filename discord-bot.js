@@ -99,12 +99,6 @@ client.on('messageCreate', async (message) => {
         return;
     }
 
-    // Check for LinkedIn alumni search command
-    if (content.startsWith('linkedin alumni')) {
-        await handleLinkedInAlumni(message);
-        return;
-    }
-
 
 });
 
@@ -1405,97 +1399,6 @@ async function handleStockSearch(message) {
     }
 }
 
-async function handleLinkedInAlumni(message) {
-    try {
-        const content = message.content.trim();
-        
-        // Parse command: linkedin alumni <university-slug> [keywords]
-        const commandText = content.substring('linkedin alumni'.length).trim();
-        
-        if (!commandText) {
-            await message.reply(`❌ Usage: \`linkedin alumni <university-slug> [keywords]\`\n\nExamples:\n• \`linkedin alumni stanford-university hr\`\n• \`linkedin alumni harvard-university software engineer\`\n• \`linkedin alumni mit\`\n\n⚠️ **Note:** University slug is the part after '/school/' in LinkedIn URLs`);
-            return;
-        }
-        
-        // Parse university slug and optional keywords
-        const parts = commandText.split(' ');
-        const universitySlug = parts[0];
-        const keywords = parts.slice(1).join(' ') || '';
-        
-        if (!universitySlug) {
-            await message.reply(`❌ Please provide a university slug.\n\nExample: \`linkedin alumni stanford-university hr\``);
-            return;
-        }
-        
-        await message.reply(`🔍 Searching LinkedIn alumni for **${universitySlug}**${keywords ? ` with keywords: "${keywords}"` : ''}...\n⏳ This may take a moment...`);
-        
-        // Import and use the LinkedIn scraper
-        const { scrapeLinkedInAlumni } = require('./linkedinScraper');
-        
-        const result = await scrapeLinkedInAlumni(universitySlug, keywords, 15); // Limit to 15 results
-        
-        if (!result.success) {
-            await message.channel.send(`❌ **Error:** ${result.error}`);
-            return;
-        }
-        
-        if (result.alumni.length === 0) {
-            let noResultsMsg = `📊 **No Alumni Found**\n\n`;
-            noResultsMsg += `**University:** ${universitySlug}\n`;
-            noResultsMsg += `**Keywords:** ${keywords || 'None'}\n\n`;
-            noResultsMsg += `💡 Tips:\n• Try different keywords\n• Check if the university slug is correct\n• Some LinkedIn pages may require authentication`;
-            
-            await message.channel.send(noResultsMsg);
-            return;
-        }
-        
-        // Format and send results
-        let response = `🎓 **LinkedIn Alumni Results**\n\n`;
-        response += `**University:** ${universitySlug.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}\n`;
-        response += `**Keywords:** ${keywords || 'None'}\n`;
-        response += `**Found:** ${result.alumni.length} alumni\n\n`;
-        
-        await message.channel.send(response);
-        
-        // Send individual alumni results (limit to avoid spam)
-        const alumniToShow = result.alumni.slice(0, 10); // Show max 10
-        
-        for (let i = 0; i < alumniToShow.length; i++) {
-            const alumni = alumniToShow[i];
-            
-            let alumniResponse = `👤 **${i + 1}. ${alumni.firstName} ${alumni.lastName}**\n`;
-            
-            if (alumni.jobTitle) {
-                alumniResponse += `**Position:** ${alumni.jobTitle}\n`;
-            }
-            
-            if (alumni.company) {
-                alumniResponse += `**Company:** ${alumni.company}\n`;
-            }
-            
-            if (!alumni.jobTitle && !alumni.company) {
-                alumniResponse += `**Info:** Limited profile information available\n`;
-            }
-            
-            alumniResponse += `\n`;
-            
-            await message.channel.send(alumniResponse);
-            
-            // Add delay between messages to avoid rate limits
-            if (i < alumniToShow.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 800));
-            }
-        }
-        
-        if (result.alumni.length > 10) {
-            await message.channel.send(`📋 **Note:** Showing top 10 results out of ${result.alumni.length} found alumni.`);
-        }
-        
-    } catch (error) {
-        console.error('Error in LinkedIn alumni command:', error);
-        await message.reply(`❌ Error processing LinkedIn alumni search: ${error.message}`);
-    }
-}
 
 async function handleHelp(message) {
     const helpText1 = `🤖 **XBot Commands**
@@ -1525,9 +1428,6 @@ async function handleHelp(message) {
 \`stock search\` - Search ticker threads (5000+ followers)
 \`stock search <ticker>\` - Search specific ticker
 
-**LinkedIn Research:**
-\`linkedin alumni <university> [keywords]\` - Search alumni profiles
-
 **Examples:**
 • \`set topic ethereum\` - Set channel topic
 • \`set follower 5000\` - Set follower threshold
@@ -1535,7 +1435,6 @@ async function handleHelp(message) {
 • \`status\` - Check status
 • \`suggest post elonmusk\` - Get suggestions
 • \`stock search BTCS\` - Find ticker threads
-• \`linkedin alumni stanford-university hr\` - Find HR alumni
 
 **Legacy:** \`set ethereum\` still works`;
 
