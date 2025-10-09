@@ -333,7 +333,7 @@ async function generateConnectionsWithCLI(prompt, topic1, tweets, logEntry) {
   const { spawn } = require('child_process');
   
   return new Promise((resolve) => {
-    const claude = spawn('claude', ['-'], { stdio: ['pipe', 'pipe', 'pipe'] });
+    const claude = spawn('/usr/local/bin/claude', ['-'], { stdio: ['pipe', 'pipe', 'pipe'] });
     let output = '';
     let errorOutput = '';
     

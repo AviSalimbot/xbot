@@ -717,16 +717,26 @@ async function handleTopicAssociation(message) {
                     response += `**Channel Topic:** ${channelTopic}\n`;
                     response += `**Generated:** ${data.suggestions.length} connections\n\n`;
                     
+                    // Track meaningful connections found
+                    let meaningfulConnections = 0;
+                    
                     // Send results in chunks to avoid Discord message limits
                     for (let i = 0; i < data.suggestions.length; i++) {
                         const suggestion = data.suggestions[i];
                         
-                        // Skip if no replies
+                        // Check if this is a meaningful connection
                         if (!suggestion.replies || suggestion.replies.length === 0) {
+                            // Send connection analysis even without replies
+                            let analysisResponse = `🔍 **Analysis ${i + 1}:**\n`;
+                            analysisResponse += `**URL:** ${suggestion.tweetUrl}\n`;
+                            analysisResponse += `**Connection:** ${suggestion.connection}\n\n`;
+                            await message.channel.send(analysisResponse);
                             continue;
                         }
                         
-                        let tweetResponse = `📢 Topic Association Alert!\n`;
+                        meaningfulConnections++;
+                        
+                        let tweetResponse = `📢 **Topic Association Alert ${i + 1}!**\n`;
                         tweetResponse += `**URL:** ${suggestion.tweetUrl}\n`;
                         tweetResponse += `**Connection:** ${suggestion.connection}\n\n`;
                         tweetResponse += `**Replies:**\n`;
@@ -746,6 +756,13 @@ async function handleTopicAssociation(message) {
                         } else {
                             await message.channel.send(tweetResponse);
                         }
+                    }
+                    
+                    // Send summary message
+                    if (meaningfulConnections === 0) {
+                        await message.channel.send(`💡 **Summary:** No meaningful connections found between these tweets and "${keyword}". The analysis shows these tweets don't strongly relate to the topic.`);
+                    } else {
+                        await message.channel.send(`✅ **Summary:** Found ${meaningfulConnections} meaningful connections out of ${data.suggestions.length} analyzed tweets.`);
                     }
                 } else {
                     await message.channel.send(`❌ **Error:** ${data.message}`);
@@ -1135,7 +1152,7 @@ async function generateWithClaudeCLI(prompt, topic1, tweetCount) {
     const { spawn } = require('child_process');
     
     return new Promise((resolve) => {
-        const claude = spawn('claude', ['-'], { stdio: ['pipe', 'pipe', 'pipe'] });
+        const claude = spawn('/usr/local/bin/claude', ['-'], { stdio: ['pipe', 'pipe', 'pipe'] });
         let output = '';
         let errorOutput = '';
         

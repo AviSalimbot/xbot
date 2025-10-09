@@ -3,7 +3,7 @@
     "name": "Ethereum",
     "searchQuery": "ethereum -scam -giveaway -airdrop -bot -pump -dump",
     "userSearchQuery": "ethereum",
-    "sheetPrefix": "Ethereum Tweets",
+    "sheetPrefix": "Tweets: Ethereum",
     "followersThreshold": 2000,
     "followAccountsThreshold": 5000,
     "statusMessages": {

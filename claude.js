@@ -41,7 +41,7 @@ async function analyzeTweet(tweetText) {
       }
     } else {
       console.log(`📝 Sending to Claude CLI...`);
-      const claude = require('child_process').spawn('claude', ['-'], { 
+      const claude = require('child_process').spawn('/usr/local/bin/claude', ['-'], { 
         stdio: ['pipe', 'pipe', 'pipe'],
         timeout: 45000 
       });

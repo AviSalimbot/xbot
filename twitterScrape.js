@@ -25,7 +25,7 @@ async function analyzeTweet(tweetText) {
     
     Return only the response, nothing else.`;
 
-    const claude = spawn('claude', ['-'], { stdio: ['pipe', 'pipe', 'pipe'] });
+    const claude = spawn('/usr/local/bin/claude', ['-'], { stdio: ['pipe', 'pipe', 'pipe'] });
     let output = '';
     
     claude.stdin.write(prompt);
