@@ -13,6 +13,7 @@ const engagersRoute = require('./routes/engagers');
 const followRouter = require('./routes/follow');
 const monitorRouter = require('./routes/monitor');
 const topicAssociationRouter = require('./routes/topicAssociation');
+const autoReplyRouter = require('./routes/autoReply');
 const EnvironmentAutomation = require('./environmentAutomation');
 
 const app = express();
@@ -365,6 +366,7 @@ app.use('/my-engagers', engagersRoute);
 app.use('/follow', topicMiddleware, followRouter);
 app.use('/monitor', topicMiddleware, monitorRouter);
 app.use('/topic-association', topicMiddleware, topicAssociationRouter);
+app.use('/auto-reply', topicMiddleware, autoReplyRouter);
 
 // Create Environment endpoint
 app.post('/create-environment', async (req, res) => {

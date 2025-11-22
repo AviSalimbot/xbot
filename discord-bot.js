@@ -19,6 +19,40 @@ const runningProcesses = new Map(); // "channelId_topic" -> process info
 const channelTopics = new Map(); // channelId -> topic
 const channelFollowerCounts = new Map(); // channelId -> follower count override
 const runningSuggestPosts = new Set(); // Track running suggest post commands
+const runningAutoReplies = new Map(); // "channelId_topic" -> auto reply process info
+const runningMonitors = new Map(); // "channelId_topic" -> monitor process info
+
+// Function to get topic for a channel (channel name fallback)
+function getChannelTopic(channelId, channel) {
+    // First check if topic is explicitly set
+    const explicitTopic = channelTopics.get(channelId);
+    if (explicitTopic) {
+        return explicitTopic;
+    }
+    
+    // Fallback to channel name as topic, but validate it exists in config
+    if (channel && channel.name) {
+        const channelTopic = channel.name.toLowerCase();
+        
+        // Validate topic exists in config
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const configPath = path.join(process.cwd(), 'config.json');
+            
+            if (fs.existsSync(configPath)) {
+                const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+                if (config[channelTopic]) {
+                    return channelTopic;
+                }
+            }
+        } catch (error) {
+            console.error('Error validating channel topic:', error);
+        }
+    }
+    
+    return null;
+}
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
@@ -102,6 +136,30 @@ client.on('messageCreate', async (message) => {
     // Check for LinkedIn alumni search command
     if (content.startsWith('linkedin alumni')) {
         await handleLinkedInAlumni(message);
+        return;
+    }
+
+    // Check for auto reply command
+    if (content.startsWith('auto reply')) {
+        await handleAutoReply(message);
+        return;
+    }
+
+    // Check for monitor command
+    if (content === 'monitor') {
+        await handleMonitor(message);
+        return;
+    }
+
+    // Check for stop monitor command
+    if (content === 'stop monitor') {
+        await handleStopMonitor(message);
+        return;
+    }
+
+    // Check for monitor status command
+    if (content === 'monitor status') {
+        await handleMonitorStatus(message);
         return;
     }
 
@@ -221,14 +279,19 @@ async function handleSetFollowerCommand(message, args) {
 async function handleGetTopic(message) {
     try {
         const channelId = message.channel.id;
-        const topic = channelTopics.get(channelId);
+        const explicitTopic = channelTopics.get(channelId);
+        const topic = getChannelTopic(channelId, message.channel);
         
         if (!topic) {
-            await message.reply(`❌ No topic set for this channel. Use \`set <topic>\` to set one.`);
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
             return;
         }
         
-        await message.reply(`📋 Current topic for this channel: **${topic}**`);
+        if (explicitTopic) {
+            await message.reply(`📋 Current topic for this channel: **${topic}** (explicitly set)`);
+        } else {
+            await message.reply(`📋 Current topic for this channel: **${topic}** (from channel name)`);
+        }
         
     } catch (error) {
         console.error('Error getting topic:', error);
@@ -288,10 +351,10 @@ async function handleGetFollower(message) {
 async function handleStartMonitoring(message) {
     try {
         const channelId = message.channel.id;
-        const topic = channelTopics.get(channelId);
+        const topic = getChannelTopic(channelId, message.channel);
         
         if (!topic) {
-            await message.reply(`❌ No topic set for this channel. Use \`set <topic>\` first.`);
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
             return;
         }
         
@@ -398,10 +461,10 @@ async function handleStartMonitoring(message) {
 async function handleStopMonitoring(message) {
     try {
         const channelId = message.channel.id;
-        const topic = channelTopics.get(channelId);
+        const topic = getChannelTopic(channelId, message.channel);
         
         if (!topic) {
-            await message.reply(`❌ No topic set for this channel. Use \`set <topic>\` first.`);
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
             return;
         }
         
@@ -501,10 +564,10 @@ async function handleStopMonitoring(message) {
 async function handleMonitoringStatus(message) {
     try {
         const channelId = message.channel.id;
-        const topic = channelTopics.get(channelId);
+        const topic = getChannelTopic(channelId, message.channel);
         
         if (!topic) {
-            await message.reply(`❌ No topic set for this channel. Use \`set <topic>\` first.`);
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
             return;
         }
         
@@ -1514,6 +1577,696 @@ async function handleLinkedInAlumni(message) {
     }
 }
 
+async function handleAutoReply(message) {
+    try {
+        const content = message.content.trim();
+        
+        // Check if there are any subcommands
+        const commandText = content.substring('auto reply'.length).trim();
+        
+        if (commandText === 'stop') {
+            await handleStopAutoReply(message);
+            return;
+        } else if (commandText === 'status') {
+            await handleAutoReplyStatus(message);
+            return;
+        } else if (commandText && (commandText.includes('twitter.com/') || commandText.includes('x.com/'))) {
+            // Extract URL from command text
+            const urlMatch = commandText.match(/(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+)/);
+            if (urlMatch) {
+                await handleInstantAutoReply(message, urlMatch[1]);
+                return;
+            } else {
+                await message.reply(`❌ Invalid Twitter/X URL format. Use: \`auto reply "https://twitter.com/user/status/123456"\``);
+                return;
+            }
+        } else if (commandText && !commandText.startsWith('start')) {
+            await message.reply(`❌ Usage:\n\`auto reply\` - Start automatic replies\n\`auto reply "https://twitter.com/user/status/123"\` - Reply to specific tweet\n\`auto reply stop\` - Stop automatic replies\n\`auto reply status\` - Check status\n\n⚠️ **Note:** Set topic first with \`set topic <topic>\``);
+            return;
+        }
+        
+        // Start auto reply (default action or explicit "start")
+        await handleStartAutoReply(message);
+        
+    } catch (error) {
+        console.error('Error in auto reply command:', error);
+        await message.reply(`❌ Error processing auto reply command: ${error.message}`);
+    }
+}
+
+async function handleStartAutoReply(message) {
+    try {
+        const channelId = message.channel.id;
+        const topic = getChannelTopic(channelId, message.channel);
+        
+        if (!topic) {
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
+            return;
+        }
+        
+        const processKey = `${channelId}_${topic}`;
+        
+        // Check if auto reply is already running for this channel+topic
+        if (runningAutoReplies.has(processKey)) {
+            await message.reply(`⚠️ Automatic replies for **${topic}** are already running in this channel! Use \`auto reply stop\` first.`);
+            return;
+        }
+
+        await message.reply(`🚀 Starting automatic replies for **${topic}** in this channel...`);
+
+        // Start the automatic reply process
+        const { spawn } = require('child_process');
+        
+        let autoReplyProcess = spawn('node', ['automaticReply.js', 'start'], {
+            cwd: process.cwd(),
+            stdio: ['ignore', 'pipe', 'pipe'],
+            env: { 
+                ...process.env, 
+                TOPIC: topic,
+                DISCORD_CHANNEL_ID: channelId,
+                DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN
+            }
+        });
+
+        // Store the process with channel+topic key
+        runningAutoReplies.set(processKey, {
+            process: autoReplyProcess,
+            startTime: new Date(),
+            channel: message.channel,
+            topic: topic,
+            channelId: channelId
+        });
+
+        // Handle process output
+        autoReplyProcess.stdout.on('data', (data) => {
+            console.log(`Auto Reply (${topic}) output: ${data.toString().trim()}`);
+        });
+
+        autoReplyProcess.stderr.on('data', (data) => {
+            console.error(`Auto Reply (${topic}) error: ${data.toString().trim()}`);
+        });
+
+        // Handle process exit
+        autoReplyProcess.on('close', (code) => {
+            console.log(`Auto Reply (${topic}) process exited with code ${code}`);
+            
+            if (code === 0) {
+                // Process exited normally
+                const autoReplyInfo = runningAutoReplies.get(processKey);
+                if (autoReplyInfo) {
+                    autoReplyInfo.isBackground = true;
+                    autoReplyInfo.startupCompleted = true;
+                }
+            } else {
+                // Process failed
+                runningAutoReplies.delete(processKey);
+                message.channel.send(`❌ ${topic} automatic replies failed to start (exit code ${code}).`);
+            }
+        });
+
+        autoReplyProcess.on('error', (error) => {
+            console.error(`Failed to start ${topic} automatic replies: ${error.message}`);
+            runningAutoReplies.delete(processKey);
+            message.channel.send(`❌ Failed to start ${topic} automatic replies: ${error.message}`);
+        });
+
+        await message.channel.send(`✅ **${topic}** automatic replies started successfully!\n🔍 Use \`auto reply status\` to check progress.`);
+
+    } catch (error) {
+        console.error('Error starting auto reply:', error);
+        await message.reply(`❌ Error starting automatic replies: ${error.message}`);
+    }
+}
+
+async function handleStopAutoReply(message) {
+    try {
+        const channelId = message.channel.id;
+        const topic = getChannelTopic(channelId, message.channel);
+        
+        if (!topic) {
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
+            return;
+        }
+        
+        const processKey = `${channelId}_${topic}`;
+        const autoReply = runningAutoReplies.get(processKey);
+        
+        // Check for actual running auto reply processes for this specific topic
+        const { exec } = require('child_process');
+        const checkAutoReplyProcess = () => new Promise((resolve) => {
+            const fs = require('fs');
+            const topicPidFile = `.${topic}_reply.pid`;
+            
+            if (fs.existsSync(topicPidFile)) {
+                try {
+                    const pid = fs.readFileSync(topicPidFile, 'utf8').trim();
+                    exec(`ps -p ${pid}`, (error, stdout) => {
+                        resolve(!error && stdout.includes(pid));
+                    });
+                } catch (e) {
+                    resolve(false);
+                }
+            } else {
+                resolve(false);
+            }
+        });
+        
+        const hasRunningProcess = await checkAutoReplyProcess();
+        
+        if (!autoReply && !hasRunningProcess) {
+            await message.reply(`ℹ️ No automatic replies are currently running for **${topic}** in this channel.`);
+            return;
+        }
+
+        await message.reply(`🛑 Stopping automatic replies for **${topic}** in this channel...`);
+
+        // Kill the tracked process if it exists
+        if (autoReply) {
+            autoReply.process.kill('SIGTERM');
+        }
+        
+        // Run stop script
+        const { spawn } = require('child_process');
+        let stopProcess = spawn('node', ['automaticReply.js', 'stop'], {
+            cwd: process.cwd(),
+            stdio: ['ignore', 'pipe', 'pipe'],
+            env: { ...process.env, TOPIC: topic }
+        });
+        
+        stopProcess.on('close', async (code) => {
+            runningAutoReplies.delete(processKey);
+            if (code === 0) {
+                await message.channel.send(`✅ **${topic}** automatic replies stopped successfully.`);
+            } else {
+                await message.channel.send(`⚠️ Stop script exited with code ${code}, but **${topic}** automatic replies should be stopped.`);
+            }
+        });
+        
+        // Force kill any remaining processes for this specific topic after 10 seconds
+        setTimeout(async () => {
+            const fs = require('fs');
+            const topicPidFile = `.${topic}_reply.pid`;
+            
+            if (fs.existsSync(topicPidFile)) {
+                try {
+                    const pid = fs.readFileSync(topicPidFile, 'utf8').trim();
+                    exec(`kill -9 ${pid}`, () => {
+                        // Force killed topic-specific process
+                    });
+                    // Clean up PID file
+                    fs.unlinkSync(topicPidFile);
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+            }
+        }, 10000);
+
+    } catch (error) {
+        console.error('Error stopping auto reply:', error);
+        await message.reply(`❌ Error stopping automatic replies: ${error.message}`);
+    }
+}
+
+async function handleAutoReplyStatus(message) {
+    try {
+        const channelId = message.channel.id;
+        const topic = getChannelTopic(channelId, message.channel);
+        
+        if (!topic) {
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
+            return;
+        }
+        
+        const processKey = `${channelId}_${topic}`;
+        const autoReply = runningAutoReplies.get(processKey);
+        
+        // Check for actual running auto reply processes for this specific topic
+        const { exec } = require('child_process');
+        const checkAutoReplyProcess = () => new Promise((resolve) => {
+            const fs = require('fs');
+            const topicPidFile = `.${topic}_reply.pid`;
+            
+            if (fs.existsSync(topicPidFile)) {
+                try {
+                    const pid = fs.readFileSync(topicPidFile, 'utf8').trim();
+                    exec(`ps -p ${pid}`, (error, stdout) => {
+                        if (!error && stdout.includes(pid)) {
+                            resolve([pid]);
+                        } else {
+                            // PID file exists but process is dead, clean it up
+                            fs.unlinkSync(topicPidFile);
+                            resolve(null);
+                        }
+                    });
+                } catch (e) {
+                    // Clean up corrupted PID file
+                    try {
+                        fs.unlinkSync(topicPidFile);
+                    } catch (e2) {}
+                    resolve(null);
+                }
+            } else {
+                resolve(null);
+            }
+        });
+        
+        const runningPids = await checkAutoReplyProcess();
+        
+        if (!autoReply && !runningPids) {
+            await message.reply(`📊 **Auto Reply Status:** **${topic}** not running in this channel\n\nUse \`auto reply\` to begin automatic replies.`);
+            return;
+        }
+
+        if (autoReply && autoReply.isBackground) {
+            // Background auto reply started via Discord bot
+            const uptime = new Date() - autoReply.startTime;
+            const hours = Math.floor(uptime / (1000 * 60 * 60));
+            const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((uptime % (1000 * 60)) / 1000);
+
+            let statusMessage = `📊 **Auto Reply Status:** **${topic}** running in this channel ✅\n`;
+            statusMessage += `**Started:** ${autoReply.startTime.toLocaleString()}\n`;
+            statusMessage += `**Uptime:** ${hours}h ${minutes}m ${seconds}s\n`;
+            statusMessage += `**Mode:** Background process\n`;
+            
+            if (runningPids) {
+                statusMessage += `**Process ID(s):** ${runningPids.join(', ')}\n`;
+            }
+            
+            statusMessage += `\nUse \`auto reply stop\` to stop **${topic}** automatic replies.`;
+            
+            await message.reply(statusMessage);
+        } else if (runningPids) {
+            // Auto reply running but not started via Discord bot
+            await message.reply(`📊 **Auto Reply Status:** **${topic}** running ✅
+**Mode:** External process
+**Process ID(s):** ${runningPids.join(', ')}
+
+Automatic replies were started outside of Discord bot.
+Use \`auto reply stop\` to stop **${topic}** automatic replies.`);
+        }
+
+    } catch (error) {
+        console.error('Error getting auto reply status:', error);
+        await message.reply(`❌ Error getting auto reply status: ${error.message}`);
+    }
+}
+
+async function handleInstantAutoReply(message, tweetUrl) {
+    try {
+        const channelId = message.channel.id;
+        const topic = getChannelTopic(channelId, message.channel);
+        
+        if (!topic) {
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
+            return;
+        }
+
+        const statusMsg = await message.reply(`🚀 Processing instant auto reply for tweet...\n**URL:** ${tweetUrl}\n**Topic:** ${topic}`);
+
+        // Import required modules
+        const { generateReply } = require('./claude-reply');
+        const { google } = require('googleapis');
+        const fs = require('fs');
+        const path = require('path');
+
+        // Get tweet content from Google Sheet (same as regular auto reply)
+        try {
+            // Load configuration
+            const configPath = path.join(__dirname, 'config.json');
+            const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+            const topicConfig = config[topic];
+            
+            if (!topicConfig) {
+                await statusMsg.edit(`❌ Topic "${topic}" not found in config. Available topics: ${Object.keys(config).join(', ')}`);
+                return;
+            }
+
+            // Set up Google Sheets (same as auto reply)
+            const auth = new google.auth.GoogleAuth({
+                keyFile: 'service-account-key-new.json',
+                scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/drive.readonly']
+            });
+            
+            const drive = google.drive({ version: 'v3', auth });
+            const sheets = google.sheets({ version: 'v4', auth });
+            
+            // Find target spreadsheet (same logic as auto reply)
+            const driveResponse = await drive.files.list({
+                q: `name='${topicConfig.targetSheet}' and '${topicConfig.folder}' in parents and mimeType='application/vnd.google-apps.spreadsheet' and trashed = false`,
+                fields: 'files(id, name)'
+            });
+            
+            if (!driveResponse.data.files || driveResponse.data.files.length === 0) {
+                await statusMsg.edit(`❌ Target sheet "${topicConfig.targetSheet}" not found in folder for topic "${topic}"`);
+                return;
+            }
+            
+            const spreadsheetId = driveResponse.data.files[0].id;
+            const range = 'Sheet1!A:E'; // [dateTime, handle, tweetText, tweetLink, followerCount]
+            
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId,
+                range,
+            });
+            
+            const rows = response.data.values;
+            if (!rows || rows.length === 0) {
+                await statusMsg.edit(`❌ No tweet data found in Google Sheet for topic "${topic}"`);
+                return;
+            }
+            
+            // Normalize URLs for comparison (x.com vs twitter.com)
+            const normalizeUrl = (url) => {
+                if (!url) return '';
+                return url.replace('x.com', 'twitter.com');
+            };
+            
+            const normalizedSearchUrl = normalizeUrl(tweetUrl);
+            console.log(`🔍 Searching for: ${normalizedSearchUrl}`);
+            
+            // Find the tweet by URL (start from row 0, no header)
+            let tweetData = null;
+            let foundUrls = [];
+            for (let i = 0; i < rows.length && i < 10; i++) { // Check first 10 rows for debugging
+                const [, handle, tweetText, tweetLink] = rows[i];
+                const normalizedSheetUrl = normalizeUrl(tweetLink);
+                foundUrls.push(normalizedSheetUrl);
+                console.log(`📄 Row ${i + 1}: ${normalizedSheetUrl}`);
+                
+                if (normalizedSheetUrl === normalizedSearchUrl) {
+                    tweetData = { handle, tweetText };
+                    console.log(`✅ Found match at row ${i + 1}!`);
+                    break;
+                }
+            }
+            
+            if (!tweetData || !tweetData.tweetText || !tweetData.handle) {
+                console.log(`❌ No match found. First 10 URLs in sheet:`, foundUrls);
+                await statusMsg.edit(`❌ Tweet not found in Google Sheet. Searched: ${normalizedSearchUrl}\n\nFirst few URLs in sheet:\n${foundUrls.slice(0, 3).map(url => `• ${url}`).join('\n')}`);
+                return;
+            }
+            
+            // Update status - generating reply
+            await statusMsg.edit(`🤖 Generating AI reply for @${tweetData.handle}...\n**URL:** ${tweetUrl}\n**Topic:** ${topic}`);
+            const replyText = await generateReply(tweetData.tweetText, tweetData.handle, topic);
+            
+            if (!replyText || replyText.trim().length === 0) {
+                await statusMsg.edit(`❌ Failed to generate reply for the tweet.`);
+                return;
+            }
+            
+            // Post the reply using the same function as auto reply
+            const { postTweetReply } = require('./automaticReply');
+            const success = await postTweetReply(tweetUrl, replyText);
+            
+            if (success) {
+                // Update status - reply posted with checkmark
+                await statusMsg.edit(`✅ **Auto Reply Posted**\nTweet Link: ${tweetUrl}\nReply: ${replyText}`);
+            } else {
+                await statusMsg.edit(`❌ Failed to post reply to the tweet. Please check the URL and try again.`);
+            }
+            
+        } catch (sheetError) {
+            throw sheetError;
+        }
+        
+    } catch (error) {
+        console.error('Error in instant auto reply:', error);
+        if (typeof statusMsg !== 'undefined') {
+            await statusMsg.edit(`❌ Error processing instant auto reply: ${error.message}`);
+        } else {
+            await message.reply(`❌ Error processing instant auto reply: ${error.message}`);
+        }
+    }
+}
+
+async function handleMonitor(message) {
+    try {
+        const channelId = message.channel.id;
+        const topic = getChannelTopic(channelId, message.channel);
+        
+        if (!topic) {
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
+            return;
+        }
+        
+        const processKey = `${channelId}_${topic}`;
+        
+        // Check if monitor is already running for this channel+topic
+        if (runningMonitors.has(processKey)) {
+            await message.reply(`⚠️ Monitor alerts for **${topic}** are already running in this channel! Use \`stop monitor\` first.`);
+            return;
+        }
+
+        await message.reply(`🚀 Starting monitor alerts for **${topic}** in this channel...\nThis will filter tweets using AI and follower count, then generate reply.`);
+
+        // Start the monitor process
+        const { spawn } = require('child_process');
+        
+        // Get follower count for this channel (override or config default)
+        const followerOverride = channelFollowerCounts.get(channelId);
+        const envVars = { 
+            ...process.env, 
+            TOPIC: topic,
+            DISCORD_CHANNEL_ID: channelId,
+            DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN
+        };
+        
+        if (followerOverride !== undefined) {
+            envVars.FOLLOWER_OVERRIDE = followerOverride.toString();
+        }
+        
+        let monitorProcess = spawn('node', ['monitorTweets.js', 'start'], {
+            cwd: process.cwd(),
+            stdio: ['ignore', 'pipe', 'pipe'],
+            env: envVars
+        });
+
+        // Store the process with channel+topic key
+        runningMonitors.set(processKey, {
+            process: monitorProcess,
+            startTime: new Date(),
+            channel: message.channel,
+            topic: topic,
+            channelId: channelId
+        });
+
+        // Handle process output
+        monitorProcess.stdout.on('data', (data) => {
+            console.log(`Monitor (${topic}) output: ${data.toString().trim()}`);
+        });
+
+        monitorProcess.stderr.on('data', (data) => {
+            console.error(`Monitor (${topic}) error: ${data.toString().trim()}`);
+        });
+
+        // Handle process exit
+        monitorProcess.on('close', (code) => {
+            console.log(`Monitor (${topic}) process exited with code ${code}`);
+            
+            if (code === 0) {
+                // Process exited normally
+                const monitorInfo = runningMonitors.get(processKey);
+                if (monitorInfo) {
+                    monitorInfo.isBackground = true;
+                    monitorInfo.startupCompleted = true;
+                }
+            } else {
+                // Process failed
+                runningMonitors.delete(processKey);
+                message.channel.send(`❌ ${topic} monitor alerts failed to start (exit code ${code}).`);
+            }
+        });
+
+        monitorProcess.on('error', (error) => {
+            console.error(`Failed to start ${topic} monitor alerts: ${error.message}`);
+            runningMonitors.delete(processKey);
+            message.channel.send(`❌ Failed to start ${topic} monitor alerts: ${error.message}`);
+        });
+
+        await message.channel.send(`✅ **${topic}** monitor alerts started successfully!`);
+
+    } catch (error) {
+        console.error('Error starting monitor:', error);
+        await message.reply(`❌ Error starting monitor alerts: ${error.message}`);
+    }
+}
+
+async function handleStopMonitor(message) {
+    try {
+        const channelId = message.channel.id;
+        const topic = getChannelTopic(channelId, message.channel);
+        
+        if (!topic) {
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
+            return;
+        }
+        
+        const processKey = `${channelId}_${topic}`;
+        const monitor = runningMonitors.get(processKey);
+        
+        // Check for actual running monitor processes for this specific topic
+        const { exec } = require('child_process');
+        const checkMonitorProcess = () => new Promise((resolve) => {
+            const fs = require('fs');
+            const topicPidFile = `.${topic}_monitor_alert.pid`;
+            
+            if (fs.existsSync(topicPidFile)) {
+                try {
+                    const pid = fs.readFileSync(topicPidFile, 'utf8').trim();
+                    exec(`ps -p ${pid}`, (error, stdout) => {
+                        resolve(!error && stdout.includes(pid));
+                    });
+                } catch (e) {
+                    resolve(false);
+                }
+            } else {
+                resolve(false);
+            }
+        });
+        
+        const hasRunningProcess = await checkMonitorProcess();
+        
+        if (!monitor && !hasRunningProcess) {
+            await message.reply(`ℹ️ No monitor alerts are currently running for **${topic}** in this channel.`);
+            return;
+        }
+
+        await message.reply(`🛑 Stopping monitor alerts for **${topic}** in this channel...`);
+
+        // Kill the tracked process if it exists
+        if (monitor) {
+            monitor.process.kill('SIGTERM');
+        }
+        
+        // Run stop script
+        const { spawn } = require('child_process');
+        let stopProcess = spawn('node', ['monitorTweets.js', 'stop'], {
+            cwd: process.cwd(),
+            stdio: ['ignore', 'pipe', 'pipe'],
+            env: { ...process.env, TOPIC: topic }
+        });
+        
+        stopProcess.on('close', async (code) => {
+            runningMonitors.delete(processKey);
+            if (code === 0) {
+                await message.channel.send(`✅ **${topic}** monitor alerts stopped successfully.`);
+            } else {
+                await message.channel.send(`⚠️ Stop script exited with code ${code}, but **${topic}** monitor alerts should be stopped.`);
+            }
+        });
+        
+        // Force kill any remaining processes for this specific topic after 10 seconds
+        setTimeout(async () => {
+            const fs = require('fs');
+            const topicPidFile = `.${topic}_monitor_alert.pid`;
+            
+            if (fs.existsSync(topicPidFile)) {
+                try {
+                    const pid = fs.readFileSync(topicPidFile, 'utf8').trim();
+                    exec(`kill -9 ${pid}`, () => {
+                        // Force killed topic-specific process
+                    });
+                    // Clean up PID file
+                    fs.unlinkSync(topicPidFile);
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+            }
+        }, 10000);
+
+    } catch (error) {
+        console.error('Error stopping monitor:', error);
+        await message.reply(`❌ Error stopping monitor alerts: ${error.message}`);
+    }
+}
+
+async function handleMonitorStatus(message) {
+    try {
+        const channelId = message.channel.id;
+        const topic = getChannelTopic(channelId, message.channel);
+        
+        if (!topic) {
+            await message.reply(`❌ Could not determine topic for this channel. Either use \`set topic <topic>\` or rename the channel to a valid topic.`);
+            return;
+        }
+        
+        const processKey = `${channelId}_${topic}`;
+        const monitor = runningMonitors.get(processKey);
+        
+        // Check for actual running monitor processes for this specific topic
+        const { exec } = require('child_process');
+        const checkMonitorProcess = () => new Promise((resolve) => {
+            const fs = require('fs');
+            const topicPidFile = `.${topic}_monitor_alert.pid`;
+            
+            if (fs.existsSync(topicPidFile)) {
+                try {
+                    const pid = fs.readFileSync(topicPidFile, 'utf8').trim();
+                    exec(`ps -p ${pid}`, (error, stdout) => {
+                        if (!error && stdout.includes(pid)) {
+                            resolve([pid]);
+                        } else {
+                            // PID file exists but process is dead, clean it up
+                            fs.unlinkSync(topicPidFile);
+                            resolve(null);
+                        }
+                    });
+                } catch (e) {
+                    // Clean up corrupted PID file
+                    try {
+                        fs.unlinkSync(topicPidFile);
+                    } catch (e2) {}
+                    resolve(null);
+                }
+            } else {
+                resolve(null);
+            }
+        });
+        
+        const runningPids = await checkMonitorProcess();
+        
+        if (!monitor && !runningPids) {
+            await message.reply(`📊 **Monitor Status:** **${topic}** alerts not running in this channel\n\nUse \`monitor\` to begin sending alerts for filtered tweets.`);
+            return;
+        }
+
+        if (monitor && monitor.isBackground) {
+            // Background monitor started via Discord bot
+            const uptime = new Date() - monitor.startTime;
+            const hours = Math.floor(uptime / (1000 * 60 * 60));
+            const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((uptime % (1000 * 60)) / 1000);
+
+            let statusMessage = `📊 **Monitor Status:** **${topic}** alerts running in this channel ✅\n`;
+            statusMessage += `**Started:** ${monitor.startTime.toLocaleString()}\n`;
+            statusMessage += `**Uptime:** ${hours}h ${minutes}m ${seconds}s\n`;
+            statusMessage += `**Mode:** Background process\n`;
+            
+            if (runningPids) {
+                statusMessage += `**Process ID(s):** ${runningPids.join(', ')}\n`;
+            }
+            
+            statusMessage += `\nSending Discord alerts for tweets that pass AI and follower filters.\nUse \`stop monitor\` to stop **${topic}** alerts.`;
+            
+            await message.reply(statusMessage);
+        } else if (runningPids) {
+            // Monitor running but not started via Discord bot
+            await message.reply(`📊 **Monitor Status:** **${topic}** alerts running ✅
+**Mode:** External process
+**Process ID(s):** ${runningPids.join(', ')}
+
+Monitor alerts were started outside of Discord bot.
+Use \`stop monitor\` to stop **${topic}** alerts.`);
+        }
+
+    } catch (error) {
+        console.error('Error getting monitor status:', error);
+        await message.reply(`❌ Error getting monitor status: ${error.message}`);
+    }
+}
+
 async function handleHelp(message) {
     const helpText1 = `🤖 **XBot Commands**
 
@@ -1527,6 +2280,11 @@ async function handleHelp(message) {
 \`status\` - Check monitoring status
 \`help monitoring\` - Show this help
 
+**Monitor Alerts (NEW):**
+\`monitor\` - Filter raw Twitter feed → Discord alerts (bypasses sheets)
+\`stop monitor\` - Stop monitor alerts
+\`monitor status\` - Check monitor alert status
+
 **Follower Management:**
 \`set follower [count]\` - Set follower threshold
 \`get follower\` - Show current threshold
@@ -1536,7 +2294,12 @@ async function handleHelp(message) {
 \`connect "keyword" "tweetLink"\` - Find tweet and connect
 
 **Post Suggestions:**
-\`suggest post <handle>\` - Analyze tweets and suggest posts`;
+\`suggest post <handle>\` - Analyze tweets and suggest posts
+
+**Auto Reply:**
+\`auto reply\` - Start automatic replies
+\`auto reply stop\` - Stop automatic replies  
+\`auto reply status\` - Check auto reply status`;
 
     const helpText2 = `**Stock Research:**
 \`stock search\` - Search ticker threads (5000+ followers)
@@ -1548,11 +2311,17 @@ async function handleHelp(message) {
 **Examples:**
 • \`set topic ethereum\` - Set channel topic
 • \`set follower 5000\` - Set follower threshold
-• \`start monitoring\` - Start monitoring
+• \`start monitoring\` - Collect tweets → Google Sheets
+• \`monitor\` - Filter tweets → Direct alerts (faster)
 • \`status\` - Check status
 • \`suggest post elonmusk\` - Get suggestions
+• \`auto reply\` - Start automatic replies
 • \`stock search BTCS\` - Find ticker threads
 • \`linkedin alumni stanford-university hr\` - Find HR alumni
+
+**Monitoring Comparison:**
+\`start monitoring\` = Raw Twitter → Filter → Google Sheets → Auto Reply
+\`monitor\` = Raw Twitter → Filter → Discord Alerts (no sheets)
 
 **Legacy:** \`set ethereum\` still works`;
 
@@ -1582,8 +2351,20 @@ process.on('SIGINT', () => {
     
     // Kill all running monitoring processes
     for (const [processKey, monitoring] of runningProcesses) {
-        console.log(`Stopping ${processKey} process...`);
+        console.log(`Stopping ${processKey} monitoring process...`);
         monitoring.process.kill('SIGTERM');
+    }
+    
+    // Kill all running auto reply processes
+    for (const [processKey, autoReply] of runningAutoReplies) {
+        console.log(`Stopping ${processKey} auto reply process...`);
+        autoReply.process.kill('SIGTERM');
+    }
+    
+    // Kill all running monitor processes
+    for (const [processKey, monitor] of runningMonitors) {
+        console.log(`Stopping ${processKey} monitor process...`);
+        monitor.process.kill('SIGTERM');
     }
     
     client.destroy();

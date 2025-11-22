@@ -1,0 +1,48 @@
+🚀 Starting automatic reply for ethereum...
+👨‍👩‍👧‍👦 Parent process PID: 1
+📝 Created PID file: .ethereum_reply.pid with PID: 27689
+✅ Automatic reply started for ethereum (runs every 5 minutes)
+🔄 Process will continue running in background...
+🚀 Starting initial automatic reply processing for ethereum...
+🚀 Starting automatic reply processing for ethereum...
+Found target sheet "Relevant Tweets": 1Icw31LaSmwxlnARzZBgvASJbNv_vVRCuA--aZyJ242c
+📊 Found 3641 relevant tweets, last processed row: 0
+
+🔄 Processing tweet 1/3641...
+📱 Tweet by @@cryptosmithcoco: "Workking #ethereum dog , with owner engaging... ?
+
+Why is this not 10mill yet ? 
+
+$MIETA 
+
+https://t..."
+🔗 Link: https://twitter.com/cryptosmithcoco/status/1939535692549558700
+🤖 Generating reply for tweet 1...
+🤖 Starting AI reply generation for tweet from @cryptosmithcoco
+📝 Sending to Claude CLI for reply generation...
+✅ Claude CLI raw response: "Looking at this crypto/meme coin tweet, I'll write a short, hype-matching reply:
+
+"The community is building! Early days for $MIETA but the energy is real 🚀"
+
+This matches the enthusiastic tone while staying under 130 characters and acknowledging the potential they're excited about."
+✅ Cleaned reply: "The community is building! Early days for $MIETA but the energy is real 🚀"
+💬 Generated reply: "The community is building! Early days for $MIETA but the energy is real 🚀"
+🤖 Opening tweet: https://twitter.com/cryptosmithcoco/status/1939535692549558700
+✅ Connected to browser successfully
+🌐 Navigating to tweet...
+✅ Successfully loaded tweet page
+📝 Attempting to post reply: "The community is building! Early days for $MIETA but the energy is real 🚀"
+✅ Clicked reply text box
+✅ Typed reply text: "The community is building! Early days for $MIETA but the energy is real 🚀"
+✅ Clicked send button
+🎉 Reply posted successfully
+✅ Tweet 1 Successfully Posted Reply.
+⏱️ Waiting 30 seconds before next reply...
+⏰ [2025-11-17T20:50:00.028Z] Running automatic reply check for ethereum...
+Already processing, skipping...
+
+🛑 Cleaning up automatic reply process...
+🧹 Destroyed cron task
+🧹 Stopped parent process monitoring
+🧹 Removed PID file: .ethereum_reply.pid
+✅ Cleanup completed

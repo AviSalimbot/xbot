@@ -383,5 +383,5 @@ if (require.main === module) {
   console.log(`${config.name} monitoring started. Running every 5 minutes...`);
 }
 
-module.exports = { processNewRows, getMonitoringStatus, stopMonitoring };
+module.exports = { processNewRows, getMonitoringStatus, stopMonitoring, getFollowerCount };
 

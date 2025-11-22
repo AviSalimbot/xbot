@@ -1,0 +1,36 @@
+🚀 Starting automatic reply for basketball...
+👨‍👩‍👧‍👦 Parent process PID: 1
+📝 Created PID file: .basketball_reply.pid with PID: 31879
+✅ Automatic reply started for basketball (runs every 5 minutes)
+🔄 Process will continue running in background...
+🚀 Starting initial automatic reply processing for basketball...
+🚀 Starting automatic reply processing for basketball...
+Found target sheet "Relevant Tweets": 1El9wjK-VJOPAL8YHRgZE3o7gMZhB0G6jYIrFbfBywX0
+📊 Found 39 relevant tweets, last processed row: 2
+
+🔄 Processing tweet 3/39...
+📱 Tweet by @@Westguytravel: "Do basketball players say shoot when they miss?"
+🔗 Link: https://twitter.com/Westguytravel/status/1946406294325547363
+🤖 Generating reply for tweet 3...
+🤖 Starting AI reply generation for tweet from @Westguytravel
+📝 Sending to Claude CLI for reply generation...
+✅ Claude CLI raw response: "They probably say something a lot less family-friendly 😅"
+✅ Cleaned reply: "They probably say something a lot less family-friendly 😅"
+💬 Generated reply: "They probably say something a lot less family-friendly 😅"
+🤖 Opening tweet: https://twitter.com/Westguytravel/status/1946406294325547363
+✅ Connected to browser successfully
+🌐 Navigating to tweet...
+✅ Successfully loaded tweet page
+📝 Attempting to post reply: "They probably say something a lot less family-friendly 😅"
+✅ Clicked reply text box
+✅ Typed reply text: "They probably say something a lot less family-friendly 😅"
+✅ Clicked send button
+🎉 Reply posted successfully
+✅ Tweet 3 Successfully Posted Reply.
+⏱️ Waiting 30 seconds before next reply...
+
+🛑 Cleaning up automatic reply process...
+🧹 Destroyed cron task
+🧹 Stopped parent process monitoring
+🧹 Removed PID file: .basketball_reply.pid
+✅ Cleanup completed

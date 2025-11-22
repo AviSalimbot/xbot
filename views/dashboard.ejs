@@ -59,6 +59,12 @@
 					<span class="text">Follow Accounts</span>
 				</a>
 			</li>
+			<li>
+				<a href="#" id="automaticReplyBtn" class="disabled" title="Set topic first" style="opacity: 0.5; cursor: not-allowed;">
+					<i class='bx bxs-message-dots'></i>
+					<span class="text">Automatic Reply</span>
+				</a>
+			</li>
 		</ul>
 	</section>
 	<!-- SIDEBAR -->
@@ -193,8 +199,9 @@
 				relevantNavItem.style.display = 'block';
 				topicAssociationNavItem.style.display = 'block';
 				
-				// Enable Follow Accounts button
+				// Enable Follow Accounts and Automatic Reply buttons
 				updateFollowAccountsButton(true);
+				updateAutomaticReplyButton(true);
 				
 				// Send topic to server with error handling
 				try {
@@ -223,6 +230,7 @@
 						relevantNavItem.style.display = 'none';
 						topicAssociationNavItem.style.display = 'none';
 						updateFollowAccountsButton(false);
+						updateAutomaticReplyButton(false);
 						
 						return;
 					}
@@ -239,6 +247,7 @@
 					relevantNavItem.style.display = 'none';
 					topicAssociationNavItem.style.display = 'none';
 					updateFollowAccountsButton(false);
+					updateAutomaticReplyButton(false);
 					
 					return;
 				}
@@ -251,8 +260,9 @@
 				relevantNavItem.style.display = 'none';
 				topicAssociationNavItem.style.display = 'none';
 				
-				// Disable Follow Accounts button
+				// Disable Follow Accounts and Automatic Reply buttons
 				updateFollowAccountsButton(false);
+				updateAutomaticReplyButton(false);
 			}
 		}
 
@@ -272,6 +282,23 @@
 				followBtn.style.cursor = 'not-allowed';
 			}
 			console.log('Button title set to:', followBtn.title);
+		}
+
+		function updateAutomaticReplyButton(enabled) {
+			const autoReplyBtn = document.getElementById('automaticReplyBtn');
+			console.log('Updating automatic reply button:', enabled, autoReplyBtn);
+			if (enabled) {
+				autoReplyBtn.classList.remove('disabled');
+				autoReplyBtn.title = '';
+				autoReplyBtn.style.opacity = '1';
+				autoReplyBtn.style.cursor = 'pointer';
+			} else {
+				autoReplyBtn.classList.add('disabled');
+				autoReplyBtn.title = 'Set topic first';
+				autoReplyBtn.style.opacity = '0.5';
+				autoReplyBtn.style.cursor = 'not-allowed';
+			}
+			console.log('Automatic Reply button title set to:', autoReplyBtn.title);
 		}
 
 		const switchMode = document.getElementById('switch-mode');
@@ -308,13 +335,15 @@
 					// Trigger the setTopic function to show all UI elements
 					await setTopic();
 				} else {
-					// No topic set, disable Follow Accounts button
+					// No topic set, disable Follow Accounts and Automatic Reply buttons
 					updateFollowAccountsButton(false);
+					updateAutomaticReplyButton(false);
 				}
 			} catch (err) {
 				console.log('No existing topic found or error checking topic:', err);
-				// No topic set, disable Follow Accounts button
+				// No topic set, disable Follow Accounts and Automatic Reply buttons
 				updateFollowAccountsButton(false);
+				updateAutomaticReplyButton(false);
 			}
 		});
 
@@ -380,6 +409,9 @@
 					break;
 				case 'follow':
 					document.querySelector('#sidebar .side-menu.top li:nth-child(6)').classList.add('active');
+					break;
+				case 'automaticReply':
+					document.querySelector('#sidebar .side-menu.top li:nth-child(7)').classList.add('active');
 					break;
 			}
 		}
@@ -458,11 +490,48 @@
 				showTopicRequiredMessage('Follow Accounts');
 				return;
 			}
+			// Update selectedTopic if it's not set but dropdown has value
+			if (!selectedTopic && topicSelect.value) {
+				selectedTopic = topicSelect.value;
+			}
 			activateSidebarItem('follow');
 			showResults();
 			followAccounts();
 			resultsTitle.textContent = 'Follow Accounts';
 			subTitle.textContent = 'Users';
+		});
+
+		document.getElementById('automaticReplyBtn').addEventListener('click', (e) => {
+			// Check if button is disabled
+			if (e.target.closest('#automaticReplyBtn').classList.contains('disabled')) {
+				// Button is disabled, do nothing (tooltip will show)
+				return;
+			}
+			
+			// Debug logging
+			const topicSelect = document.getElementById('topicSelect');
+			console.log('🔍 Automatic Reply clicked');
+			console.log('🔍 selectedTopic:', selectedTopic);
+			console.log('🔍 topicSelect.value:', topicSelect.value);
+			
+			// Automatic Reply requires a topic to be set
+			if (!selectedTopic && !topicSelect.value) {
+				console.log('❌ No topic found, showing topic required message');
+				showTopicRequiredMessage('Automatic Reply');
+				return;
+			}
+			// Update selectedTopic if it's not set but dropdown has value
+			if (!selectedTopic && topicSelect.value) {
+				selectedTopic = topicSelect.value;
+				console.log('✅ Updated selectedTopic to:', selectedTopic);
+			}
+			
+			console.log('🚀 Proceeding to load automatic reply with topic:', selectedTopic);
+			activateSidebarItem('automaticReply');
+			showResults();
+			loadAutomaticReply();
+			resultsTitle.textContent = 'Automatic Reply';
+			subTitle.textContent = 'Manage Auto Responses';
 		});
 
 		document.getElementById('topicAssociationBtn').addEventListener('click', () => {
@@ -620,6 +689,263 @@
 				statusDiv.textContent = 'Error fetching engagers.';
 				statusDiv.className = 'status-message status-error';
 			} finally {
+			}
+		}
+
+		async function loadAutomaticReply() {
+			container.innerHTML = '';
+			statusDiv.style.display = '';
+			statusDiv.textContent = 'Loading automatic reply status...';
+			statusDiv.className = 'status-message';
+
+			try {
+				// Get current automatic reply status
+				console.log('🔍 Fetching auto-reply status...');
+				const statusResponse = await fetch(`/auto-reply/status?t=${Date.now()}`);
+				const statusData = await statusResponse.json();
+				
+				console.log('🔍 Status response:', statusData);
+				
+				// Handle topic not selected error
+				if (!statusData.success && statusData.needsTopicSelection) {
+					console.log('❌ Backend says topic not selected');
+					showTopicRequiredMessage('Automatic Reply');
+					return;
+				}
+
+				// Create automatic reply interface
+				container.innerHTML = `
+					<div class="automatic-reply-container">
+						<div class="auto-reply-header">
+							<h3>Automatic Reply System</h3>
+							<p>AI-powered replies to relevant ${selectedTopic || 'topic'} tweets</p>
+						</div>
+						
+						<div class="auto-reply-status">
+							<div class="status-indicator ${statusData.isRunning ? 'active' : 'inactive'}">
+								<i class='bx ${statusData.isRunning ? 'bxs-circle' : 'bxs-circle'}'></i>
+								<span>${statusData.isRunning ? 'Active' : 'Inactive'}</span>
+							</div>
+							<p class="status-message">${statusData.message}</p>
+						</div>
+						
+						<div class="auto-reply-info">
+							<div class="info-card">
+								<h4>How it works:</h4>
+								<ul>
+									<li>🔍 Monitors relevant ${selectedTopic || 'topic'} tweets sheet</li>
+									<li>🤖 Generates human-like replies using AI</li>
+									<li>📱 Posts replies automatically to Twitter</li>
+									<li>📊 Tracks progress from last processed tweet</li>
+								</ul>
+							</div>
+							
+							<div class="info-card">
+								<h4>Current Settings:</h4>
+								<ul>
+									<li><strong>Topic:</strong> ${selectedTopic || 'Not selected'}</li>
+									<li><strong>Source Sheet:</strong> Relevant Tweets</li>
+									<li><strong>Reply Interval:</strong> Every 5 minutes</li>
+									<li><strong>Reply Delay:</strong> 30 seconds between tweets</li>
+								</ul>
+							</div>
+						</div>
+						
+						<div class="auto-reply-controls">
+							<button id="startAutoReply" class="action-btn start" ${statusData.isRunning ? 'disabled' : ''}>
+								<i class='bx bx-play'></i>
+								Start Automatic Reply
+							</button>
+							<button id="stopAutoReply" class="action-btn stop" ${!statusData.isRunning ? 'disabled' : ''}>
+								<i class='bx bx-stop'></i>
+								Stop Automatic Reply
+							</button>
+							<button id="processOnce" class="action-btn process" ${statusData.isRunning ? 'disabled' : ''}>
+								<i class='bx bx-refresh'></i>
+								Process Once
+							</button>
+						</div>
+						
+						<div class="auto-reply-logs">
+							<h4>Recent Activity:</h4>
+							<div id="autoReplyLogContainer" class="log-container">
+								<p class="log-placeholder">Logs will appear here when automatic reply is active...</p>
+							</div>
+							<button id="refreshLogs" class="action-btn secondary">
+								<i class='bx bx-refresh'></i>
+								Refresh Logs
+							</button>
+						</div>
+					</div>
+				`;
+
+				// Add event listeners
+				document.getElementById('startAutoReply').addEventListener('click', startAutoReply);
+				document.getElementById('stopAutoReply').addEventListener('click', stopAutoReply);
+				document.getElementById('processOnce').addEventListener('click', processOnceAutoReply);
+				document.getElementById('refreshLogs').addEventListener('click', loadAutoReplyLogs);
+				
+				// Load initial logs
+				await loadAutoReplyLogs();
+				
+				statusDiv.style.display = 'none';
+				
+			} catch (error) {
+				statusDiv.textContent = 'Error loading automatic reply status: ' + error.message;
+				statusDiv.className = 'status-message status-error';
+				console.error('Error loading automatic reply status:', error);
+			}
+		}
+
+		async function startAutoReply() {
+			statusDiv.style.display = '';
+			statusDiv.textContent = 'Starting automatic reply system...';
+			statusDiv.className = 'status-message';
+
+			try {
+				const response = await fetch('/auto-reply/start', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ topic: selectedTopic })
+				});
+				
+				const data = await response.json();
+				
+				if (data.success) {
+					statusDiv.textContent = 'Automatic reply started successfully!';
+					statusDiv.className = 'status-message status-success';
+					
+					// Update UI immediately without waiting for reload
+					updateAutoReplyUI(true); // Show active state
+					
+				} else {
+					statusDiv.textContent = 'Failed to start automatic reply: ' + data.message;
+					statusDiv.className = 'status-message status-error';
+				}
+			} catch (error) {
+				statusDiv.textContent = 'Error starting automatic reply: ' + error.message;
+				statusDiv.className = 'status-message status-error';
+			}
+		}
+
+		async function stopAutoReply() {
+			statusDiv.style.display = '';
+			statusDiv.textContent = 'Stopping automatic reply system...';
+			statusDiv.className = 'status-message';
+
+			try {
+				const response = await fetch('/auto-reply/stop', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ topic: selectedTopic })
+				});
+				
+				const data = await response.json();
+				
+				if (data.success) {
+					statusDiv.textContent = 'Automatic reply stopped successfully!';
+					statusDiv.className = 'status-message status-success';
+					
+					// Update UI immediately without waiting for reload
+					updateAutoReplyUI(false); // Show inactive state
+					
+				} else {
+					statusDiv.textContent = 'Failed to stop automatic reply: ' + data.message;
+					statusDiv.className = 'status-message status-error';
+				}
+			} catch (error) {
+				statusDiv.textContent = 'Error stopping automatic reply: ' + error.message;
+				statusDiv.className = 'status-message status-error';
+			}
+		}
+
+		function updateAutoReplyUI(isRunning) {
+			// Update status indicator
+			const statusIndicator = document.querySelector('.auto-reply-status .status-indicator');
+			const statusText = statusIndicator.querySelector('span');
+			
+			if (isRunning) {
+				statusIndicator.classList.remove('inactive');
+				statusIndicator.classList.add('active');
+				statusText.textContent = 'Active';
+			} else {
+				statusIndicator.classList.remove('active');
+				statusIndicator.classList.add('inactive');
+				statusText.textContent = 'Inactive';
+			}
+			
+			// Update buttons
+			const startBtn = document.getElementById('startAutoReply');
+			const stopBtn = document.getElementById('stopAutoReply');
+			const processBtn = document.getElementById('processOnce');
+			
+			if (isRunning) {
+				startBtn.disabled = true;
+				stopBtn.disabled = false;
+				processBtn.disabled = true;
+			} else {
+				startBtn.disabled = false;
+				stopBtn.disabled = true;
+				processBtn.disabled = false;
+			}
+		}
+
+		async function processOnceAutoReply() {
+			statusDiv.style.display = '';
+			statusDiv.textContent = 'Processing relevant tweets once...';
+			statusDiv.className = 'status-message';
+
+			try {
+				const response = await fetch('/auto-reply/process', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ topic: selectedTopic })
+				});
+				
+				const data = await response.json();
+				
+				if (data.success) {
+					statusDiv.textContent = 'Processing completed successfully!';
+					statusDiv.className = 'status-message status-success';
+					
+					// Refresh logs to show new activity
+					setTimeout(() => {
+						loadAutoReplyLogs();
+					}, 1000);
+				} else {
+					statusDiv.textContent = 'Failed to process tweets: ' + data.message;
+					statusDiv.className = 'status-message status-error';
+				}
+			} catch (error) {
+				statusDiv.textContent = 'Error processing tweets: ' + error.message;
+				statusDiv.className = 'status-message status-error';
+			}
+		}
+
+		async function loadAutoReplyLogs() {
+			const logContainer = document.getElementById('autoReplyLogContainer');
+			if (!logContainer) return;
+			
+			try {
+				const response = await fetch(`/auto-reply/logs?topic=${selectedTopic}&lines=50`);
+				const data = await response.json();
+				
+				if (data.success && data.logs && data.logs.length > 0) {
+					logContainer.innerHTML = data.logs.map(log => 
+						`<div class="log-entry ${log.type || ''}">${log.message}</div>`
+					).join('');
+				} else {
+					logContainer.innerHTML = '<p class="log-placeholder">No recent activity logs found.</p>';
+				}
+			} catch (error) {
+				logContainer.innerHTML = '<p class="log-error">Error loading logs: ' + error.message + '</p>';
+				console.error('Error loading auto reply logs:', error);
 			}
 		}
 
